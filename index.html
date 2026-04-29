@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BigCompany — Portfolio Diagnostic</title>
+<meta name="description" content="Strategic alignment × impact diagnostic for the BigCompany.com initiative portfolio." />
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='3' fill='%230a1f33'/%3E%3Ctext x='14' y='19' text-anchor='middle' font-size='13' font-weight='800' fill='%23fbf9f4' font-family='system-ui'%3EBC%3C/text%3E%3Crect x='22' y='22' width='4' height='4' fill='%23b45309'/%3E%3C/svg%3E" />
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
+
+<!-- React + Babel for in-browser JSX -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js" crossorigin></script>
+
+<style>
+  :root {
+    --f-sans: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    --f-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #fbf9f4;
+    font-family: var(--f-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  * { box-sizing: border-box; }
+  button { font-family: var(--f-sans); }
+
+  /* Loading state — shown until React hydrates */
+  #loading {
+    position: fixed;
+    inset: 0;
+    background: #fbf9f4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 16px;
+    z-index: 100;
+    transition: opacity 0.3s ease;
+  }
+  #loading.hidden { opacity: 0; pointer-events: none; }
+  #loading .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #b45309;
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+  #loading .label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #64748b;
+    font-weight: 600;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideIn {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .pulse { animation: pulse 2s ease-in-out infinite; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="dot"></div>
+  <div class="label">PORTFOLIO DIAGNOSTIC · LOADING</div>
+</div>
+
+<div id="root"></div>
+
+<script type="text/babel" data-presets="env,react">
+const { useState, useMemo, useEffect } = React;
+
+const DATA = [{"id":0,"name":"Initiative 001","lead":"Workstream G","category":"Commissioning","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 42","pm_missing":false,"external":true,"recoverable":null,"start":"2026-08","finish":"2027-05","duration_months":9.0,"effort_raw":6.99,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A, Workstream C, Workstream F","consultancy_spend":null,"plot_x":2.455,"plot_y":5.162},{"id":1,"name":"Initiative 014","lead":"Workstream A","category":"Data and modelling","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 44","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-07","finish":"2027-03","duration_months":8.0,"effort_raw":4.33,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.584,"plot_y":5.036},{"id":2,"name":"Initiative 015","lead":"Workstream A","category":"Digital","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 44","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-05","finish":"2027-03","duration_months":10.0,"effort_raw":3.96,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":null,"plot_x":2.376,"plot_y":4.876},{"id":3,"name":"Initiative 016","lead":"Workstream A","category":"Digital","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 36","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-02","finish":"2026-09","duration_months":7.0,"effort_raw":5.06,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.341,"plot_y":5.132},{"id":4,"name":"Initiative 017","lead":"External Workstream","category":"Digital","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 01","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-01","finish":"2026-04","duration_months":14.9,"effort_raw":4.79,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function","consultancy_spend":null,"plot_x":2.536,"plot_y":5.075},{"id":5,"name":"Initiative 018","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":5.0,"impact_level":"H","pm":"TBC","pm_missing":true,"external":true,"recoverable":null,"start":"2026-03","finish":"2027-06","duration_months":15.0,"effort_raw":6.5,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream D","consultancy_spend":null,"plot_x":2.327,"plot_y":5.169},{"id":6,"name":"Initiative 019","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 14","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-04","finish":"2026-12","duration_months":8.0,"effort_raw":4.54,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.62,"plot_y":4.896},{"id":7,"name":"Initiative 020","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 05","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-03","finish":"2026-08","duration_months":5.0,"effort_raw":4.74,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.385,"plot_y":4.886},{"id":8,"name":"Initiative 021","lead":"Workstream A","category":"Training","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 43","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":8.33,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.43,"plot_y":2.509},{"id":9,"name":"Initiative 022","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 03","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2025-01","finish":"2026-12","duration_months":23.0,"effort_raw":5.83,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":2.476,"plot_y":2.425},{"id":10,"name":"Initiative 023","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 09","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2023-03","finish":"2026-12","duration_months":45.0,"effort_raw":4.0,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.54,"plot_y":2.37},{"id":11,"name":"Initiative 024","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 36","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-11","finish":"2026-12","duration_months":13.0,"effort_raw":2.76,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.425,"plot_y":2.452},{"id":12,"name":"Initiative 028","lead":"Workstream B","category":"Regulatory","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 26","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2027-03","finish":"2027-12","duration_months":9.0,"effort_raw":5.41,"resource_count":5,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":0.0,"plot_x":2.484,"plot_y":2.603},{"id":13,"name":"Initiative 029","lead":"Workstream B","category":"Regulatory","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 26","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2024-07","finish":"2026-09","duration_months":26.0,"effort_raw":10.2,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":40000.0,"plot_x":2.392,"plot_y":2.505},{"id":14,"name":"Initiative 034","lead":"Workstream B","category":"Training","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 34","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":3.53,"resource_count":1,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":2.533,"plot_y":2.337},{"id":15,"name":"Initiative 037","lead":"Workstream B","category":"Industry Engagement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"TBC","pm_missing":true,"external":false,"recoverable":"Recoverable","start":"2026-03","finish":"2027-06","duration_months":15.0,"effort_raw":2.5,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":2.539,"plot_y":2.381},{"id":16,"name":"Initiative 041","lead":"Workstream F","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 29","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-07","duration_months":16.0,"effort_raw":3.27,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F Workstream F Workstream F","consultancy_spend":null,"plot_x":2.343,"plot_y":2.662},{"id":17,"name":"Initiative 044","lead":"Workstream F","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 30","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-06","duration_months":15.0,"effort_raw":3.1,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F Workstream F Workstream F","consultancy_spend":null,"plot_x":2.668,"plot_y":2.611},{"id":18,"name":"Initiative 045","lead":"External Workstream","category":"Digital","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 37","pm_missing":false,"external":false,"recoverable":null,"start":"2024-12","finish":"2030-06","duration_months":66.0,"effort_raw":7.9,"resource_count":3,"comments":null,"shared_resources":"Digital function, Workstream D","consultancy_spend":null,"plot_x":2.43,"plot_y":2.355},{"id":19,"name":"Initiative 052","lead":"External Workstream","category":"Market Reform","sa":2.5,"impact":1.0,"impact_level":"L","pm":"PM 36","pm_missing":false,"external":true,"recoverable":null,"start":"2026-07","finish":"2027-06","duration_months":11.0,"effort_raw":8.23,"resource_count":3,"comments":null,"shared_resources":"Workstream D","consultancy_spend":null,"plot_x":2.566,"plot_y":0.978},{"id":20,"name":"Initiative 056","lead":"External Workstream","category":"Regulatory","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-03","duration_months":12.0,"effort_raw":2.0,"resource_count":0,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.364,"plot_y":0.998},{"id":21,"name":"Initiative 057","lead":"External Workstream","category":"Infrastructure Program","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-10","duration_months":7.0,"effort_raw":1.17,"resource_count":0,"comments":null,"shared_resources":"Workstream E","consultancy_spend":null,"plot_x":2.332,"plot_y":1.147},{"id":22,"name":"Initiative 064","lead":"Workstream D","category":"Process Improvement","sa":2.5,"impact":1.0,"impact_level":"L","pm":"PM 39","pm_missing":false,"external":false,"recoverable":null,"start":"2026-09","finish":"2027-06","duration_months":9.0,"effort_raw":3.39,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":2.413,"plot_y":1.059},{"id":23,"name":"Initiative 080","lead":"External Workstream","category":"Process Improvement","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2025-11","finish":"2026-12","duration_months":13.0,"effort_raw":3.36,"resource_count":2,"comments":null,"shared_resources":"Workstream C","consultancy_spend":null,"plot_x":2.432,"plot_y":1.007},{"id":24,"name":"Initiative 082","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":1.0,"impact_level":"L","pm":"Employee 012","pm_missing":false,"external":false,"recoverable":null,"start":"2024-05","finish":"2026-09","duration_months":28.0,"effort_raw":4.7,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.517,"plot_y":0.887},{"id":25,"name":"Initiative 084","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2025-09","finish":"2026-12","duration_months":15.0,"effort_raw":4.3,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.669,"plot_y":1.099},{"id":26,"name":"Initiative 087","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2027-01","finish":"2028-07","duration_months":18.0,"effort_raw":4.79,"resource_count":2,"comments":null,"shared_resources":"Operations","consultancy_spend":null,"plot_x":2.658,"plot_y":2.142},{"id":27,"name":"Initiative 088","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2027-06","finish":"2028-07","duration_months":13.0,"effort_raw":2.87,"resource_count":1,"comments":null,"shared_resources":"Operations","consultancy_spend":null,"plot_x":2.535,"plot_y":2.152},{"id":28,"name":"Initiative 089","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"PM 19","pm_missing":false,"external":false,"recoverable":null,"start":"2026-04","finish":"2027-02","duration_months":10.1,"effort_raw":4.08,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":2.352,"plot_y":1.891},{"id":29,"name":"Initiative 090","lead":"Workstream E","category":"Process Improvement","sa":2.5,"impact":2.0,"impact_level":"L","pm":"Employee 022","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-12","duration_months":11.0,"effort_raw":3.83,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C, Workstream D","consultancy_spend":null,"plot_x":2.336,"plot_y":1.937},{"id":30,"name":"Initiative 093","lead":"Workstream C","category":"Regulatory","sa":2.5,"impact":2.0,"impact_level":"L","pm":"PM 26","pm_missing":false,"external":true,"recoverable":null,"start":"2025-08","finish":"2027-02","duration_months":18.0,"effort_raw":10.01,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.46,"plot_y":1.918},{"id":31,"name":"Initiative 095","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-03","duration_months":12.0,"effort_raw":2.9,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"AI Data and Governance","consultancy_spend":null,"plot_x":2.618,"plot_y":1.948},{"id":32,"name":"Initiative 096","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":4.0,"impact_level":"H","pm":"PM 28","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-04","duration_months":3.0,"effort_raw":0.49,"resource_count":0,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":2.421,"plot_y":4.015},{"id":33,"name":"Initiative 026","lead":"Workstream B","category":"Industry Engagement","sa":4.0,"impact":5.0,"impact_level":"H","pm":"TBC","pm_missing":true,"external":true,"recoverable":"Recoverable","start":"2026-09","finish":"2027-12","duration_months":15.0,"effort_raw":8.2,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C, Workstream F","consultancy_spend":780000.0,"plot_x":3.871,"plot_y":5.109},{"id":34,"name":"Initiative 027","lead":"Workstream B","category":"Industry Engagement","sa":4.0,"impact":4.0,"impact_level":"H","pm":"Employee 004","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":5.83,"resource_count":2,"comments":null,"shared_resources":"Workstream C, Workstream F","consultancy_spend":0.0,"plot_x":3.847,"plot_y":4.175},{"id":35,"name":"Initiative 030","lead":"Workstream B","category":"Regulatory","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 26","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-03","finish":"2027-03","duration_months":12.0,"effort_raw":3.5,"resource_count":1,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":4.098,"plot_y":3.892},{"id":36,"name":"Initiative 032","lead":"Workstream B","category":"Training","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 34","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-07","finish":"2026-12","duration_months":5.0,"effort_raw":2.44,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":3.822,"plot_y":4.114},{"id":37,"name":"Initiative 033","lead":"Workstream B","category":"Training","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 34","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-06","finish":"2027-03","duration_months":9.0,"effort_raw":2.39,"resource_count":1,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":4.074,"plot_y":4.082},{"id":38,"name":"Initiative 036","lead":"Workstream B","category":"Process Improvement","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 34","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-07","finish":"2027-06","duration_months":11.0,"effort_raw":1.83,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"All of Workstream","consultancy_spend":null,"plot_x":4.098,"plot_y":3.847},{"id":39,"name":"Initiative 038","lead":"Workstream B","category":"Regulatory","sa":4.0,"impact":5.0,"impact_level":"H","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-12","duration_months":9.0,"effort_raw":1.51,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":3.949,"plot_y":4.862},{"id":40,"name":"Initiative 042","lead":"Workstream F","category":"Training","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 13","pm_missing":false,"external":false,"recoverable":null,"start":"2024-03","finish":"2027-06","duration_months":39.0,"effort_raw":8.4,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.131,"plot_y":2.044},{"id":41,"name":"Initiative 071","lead":"Workstream D","category":"Regulatory","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 17","pm_missing":false,"external":false,"recoverable":null,"start":"2027-07","finish":"2028-06","duration_months":11.0,"effort_raw":1.84,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Enable and Legal","consultancy_spend":null,"plot_x":3.939,"plot_y":1.843},{"id":42,"name":"Initiative 081","lead":"Workstream C","category":"Data and modelling","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 004","pm_missing":false,"external":false,"recoverable":null,"start":"2025-11","finish":"2026-12","duration_months":13.0,"effort_raw":3.66,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":3.932,"plot_y":1.937},{"id":43,"name":"Initiative 083","lead":"Workstream C","category":"Data and modelling","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 060","pm_missing":false,"external":true,"recoverable":null,"start":"2026-05","finish":"2027-09","duration_months":15.9,"effort_raw":5.96,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.083,"plot_y":2.05},{"id":44,"name":"Initiative 094","lead":"Workstream C","category":"Regulatory","sa":4.0,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2026-04","finish":"2026-09","duration_months":5.0,"effort_raw":2.44,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream G","consultancy_spend":null,"plot_x":4.139,"plot_y":1.99},{"id":45,"name":"Initiative 002","lead":"Workstream G","category":"Commissioning","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 42","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-07","duration_months":4.0,"effort_raw":2.27,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":3.863,"plot_y":2.077},{"id":46,"name":"Initiative 003","lead":"Workstream G","category":"Commissioning","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 022","pm_missing":false,"external":true,"recoverable":null,"start":"2025-12","finish":"2026-06","duration_months":6.0,"effort_raw":9.4,"resource_count":5,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.094,"plot_y":2.022},{"id":47,"name":"Initiative 004","lead":"Workstream G","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 42","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-12","duration_months":11.0,"effort_raw":1.83,"resource_count":0,"comments":null,"shared_resources":"Workstream A","consultancy_spend":null,"plot_x":4.098,"plot_y":1.998},{"id":48,"name":"Initiative 005","lead":"Workstream G","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 42","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-12","duration_months":11.0,"effort_raw":1.83,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":4.008,"plot_y":1.974},{"id":49,"name":"Initiative 006","lead":"Workstream A","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 44","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2025-02","finish":"2027-03","duration_months":24.9,"effort_raw":11.0,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function, Workstream C","consultancy_spend":null,"plot_x":3.829,"plot_y":1.859},{"id":50,"name":"Initiative 007","lead":"Workstream A","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 44","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2025-02","finish":"2026-06","duration_months":15.9,"effort_raw":9.26,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function","consultancy_spend":null,"plot_x":3.831,"plot_y":2.049},{"id":51,"name":"Initiative 008","lead":"Workstream A","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 23","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2024","finish":"2026-06","duration_months":null,"effort_raw":3.7,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream D, Workstream group","consultancy_spend":null,"plot_x":3.933,"plot_y":2.003},{"id":52,"name":"Initiative 009","lead":"Workstream A","category":"Government","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 35","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-01","finish":"2027-03","duration_months":25.9,"effort_raw":9.9,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.147,"plot_y":1.91},{"id":53,"name":"Initiative 010","lead":"Workstream A","category":"Government","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 35","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2024-06","finish":"2026-06","duration_months":24.0,"effort_raw":9.9,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":3.968,"plot_y":2.092},{"id":54,"name":"Initiative 011","lead":"Workstream A","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 15","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-12","finish":"2026-06","duration_months":6.0,"effort_raw":4.4,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":3.902,"plot_y":1.848},{"id":55,"name":"Initiative 012","lead":"Workstream A","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 36","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-06","finish":"2026-12","duration_months":6.0,"effort_raw":4.8,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":3.924,"plot_y":1.878},{"id":56,"name":"Initiative 013","lead":"Workstream A","category":"Process Improvement","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 32","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":2.73,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream D","consultancy_spend":null,"plot_x":4.155,"plot_y":3.111},{"id":57,"name":"Initiative 025","lead":"Workstream B","category":"Industry Engagement","sa":4.0,"impact":3.0,"impact_level":"M","pm":"Employee 004","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2025-09","finish":"2026-03","duration_months":5.9,"effort_raw":5.89,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":0.0,"plot_x":4.048,"plot_y":3.134},{"id":58,"name":"Initiative 031","lead":"Workstream B","category":"Regulatory","sa":4.0,"impact":3.0,"impact_level":"M","pm":"Employee 036","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2024-04","finish":"2026-06","duration_months":26.0,"effort_raw":11.4,"resource_count":5,"comments":null,"shared_resources":"Workstream C","consultancy_spend":0.0,"plot_x":4.109,"plot_y":2.887},{"id":59,"name":"Initiative 035","lead":"Workstream B","category":"Process Improvement","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 21","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-11","finish":"2026-06","duration_months":7.0,"effort_raw":1.16,"resource_count":0,"comments":null,"shared_resources":"All of Workstream","consultancy_spend":null,"plot_x":4.141,"plot_y":3.014},{"id":60,"name":"Initiative 039","lead":"Workstream F","category":"Data and modelling","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 04","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-01","finish":"2027-09","duration_months":20.0,"effort_raw":6.23,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":4.111,"plot_y":3.143},{"id":61,"name":"Initiative 040","lead":"Workstream F","category":"Government","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 30","pm_missing":false,"external":false,"recoverable":null,"start":"2026-07","finish":"2027-03","duration_months":8.0,"effort_raw":1.93,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":3.934,"plot_y":2.86},{"id":62,"name":"Initiative 043","lead":"Workstream F","category":"Uncategorised","sa":4.0,"impact":3.0,"impact_level":"M","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2025-12","finish":"2027-12","duration_months":24.0,"effort_raw":4.0,"resource_count":0,"comments":null,"shared_resources":"Workstream F Workstream F Workstream F","consultancy_spend":null,"plot_x":3.902,"plot_y":2.974},{"id":63,"name":"Initiative 046","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 08","pm_missing":false,"external":false,"recoverable":null,"start":"2024-06","finish":"2026-08","duration_months":26.0,"effort_raw":6.2,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.114,"plot_y":3.13},{"id":64,"name":"Initiative 047","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":5.0,"impact_level":"H","pm":"PM 06","pm_missing":false,"external":false,"recoverable":null,"start":"2024-05","finish":"2027-05","duration_months":36.0,"effort_raw":7.84,"resource_count":3,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.823,"plot_y":5.004},{"id":65,"name":"Initiative 048","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":5.0,"impact_level":"H","pm":"PM 33","pm_missing":false,"external":false,"recoverable":null,"start":"2025-06","finish":"2026-12","duration_months":18.0,"effort_raw":5.2,"resource_count":2,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.97,"plot_y":4.9},{"id":66,"name":"Initiative 049","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":5.0,"impact_level":"H","pm":"PM 25","pm_missing":false,"external":false,"recoverable":null,"start":"2024-02","finish":"2026-07","duration_months":28.9,"effort_raw":5.0,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.863,"plot_y":4.942},{"id":67,"name":"Initiative 050","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2025-09","finish":"2027-12","duration_months":27.0,"effort_raw":5.12,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.159,"plot_y":0.936},{"id":68,"name":"Initiative 051","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"PM 20","pm_missing":false,"external":false,"recoverable":null,"start":"2024-09","finish":"2027-03","duration_months":29.9,"effort_raw":5.5,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.007,"plot_y":1.073},{"id":69,"name":"Initiative 053","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"PM 16","pm_missing":false,"external":false,"recoverable":null,"start":"2026-06","finish":"2027-07","duration_months":13.0,"effort_raw":6.26,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.951,"plot_y":1.17},{"id":70,"name":"Initiative 054","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"PM 16","pm_missing":false,"external":false,"recoverable":null,"start":"2026-06","finish":"2027-07","duration_months":13.0,"effort_raw":6.26,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.166,"plot_y":0.911},{"id":71,"name":"Initiative 055","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":null,"finish":null,"duration_months":null,"effort_raw":0.0,"resource_count":0,"comments":null,"shared_resources":"Workstream D","consultancy_spend":null,"plot_x":3.999,"plot_y":0.928},{"id":72,"name":"Initiative 058","lead":"External Workstream","category":"Infrastructure Program","sa":4.0,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":"Non Recoverable","start":"2025-11","finish":"2026-09","duration_months":10.0,"effort_raw":2.26,"resource_count":0,"comments":null,"shared_resources":"Workstream E","consultancy_spend":null,"plot_x":3.923,"plot_y":1.833},{"id":73,"name":"Initiative 059","lead":"External Workstream","category":"Government","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 41","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-02","finish":"2026-05","duration_months":2.9,"effort_raw":2.49,"resource_count":0,"comments":null,"shared_resources":"Workstream B Workstream D Workstream C","consultancy_spend":null,"plot_x":4.039,"plot_y":2.001},{"id":74,"name":"Initiative 060","lead":"Workstream D","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 31","pm_missing":false,"external":false,"recoverable":null,"start":"2024-12","finish":"2026-08","duration_months":20.0,"effort_raw":6.43,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function, Workstream A","consultancy_spend":null,"plot_x":3.839,"plot_y":1.92},{"id":75,"name":"Initiative 061","lead":"Workstream D","category":"Market Reform","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 31","pm_missing":false,"external":false,"recoverable":null,"start":"2025-09","finish":"2026-06","duration_months":9.0,"effort_raw":6.39,"resource_count":5,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function, Workstream A","consultancy_spend":null,"plot_x":4.147,"plot_y":1.906},{"id":76,"name":"Initiative 062","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 40","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2027-03","duration_months":13.9,"effort_raw":3.52,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function","consultancy_spend":null,"plot_x":3.872,"plot_y":1.996},{"id":77,"name":"Initiative 063","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 041","pm_missing":false,"external":false,"recoverable":null,"start":"2026-07","finish":"2027-12","duration_months":17.0,"effort_raw":3.84,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.175,"plot_y":1.907},{"id":78,"name":"Initiative 065","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 018","pm_missing":false,"external":false,"recoverable":null,"start":"2026-02","finish":"2027-07","duration_months":16.9,"effort_raw":6.22,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.062,"plot_y":2.094},{"id":79,"name":"Initiative 066","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 030","pm_missing":false,"external":false,"recoverable":null,"start":"2026-02","finish":"2026-07","duration_months":4.9,"effort_raw":4.62,"resource_count":4,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":3.906,"plot_y":2.082},{"id":80,"name":"Initiative 067","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 10","pm_missing":false,"external":false,"recoverable":null,"start":"2026-02","finish":"2027-06","duration_months":15.9,"effort_raw":5.06,"resource_count":3,"comments":null,"shared_resources":"Workstream A","consultancy_spend":null,"plot_x":3.952,"plot_y":2.048},{"id":81,"name":"Initiative 068","lead":"Workstream D","category":"Process Improvement","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 40","pm_missing":false,"external":true,"recoverable":null,"start":"2026-02","finish":"2027-06","duration_months":15.9,"effort_raw":6.56,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.048,"plot_y":2.013},{"id":82,"name":"Initiative 069","lead":"Workstream D","category":"Process Improvement","sa":5.0,"impact":2.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":true,"recoverable":null,"start":"2026-07","finish":"2027-06","duration_months":11.0,"effort_raw":3.83,"resource_count":0,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":4.853,"plot_y":2.121},{"id":83,"name":"Initiative 070","lead":"Workstream D","category":"Regulatory","sa":5.0,"impact":2.0,"impact_level":"L","pm":"Employee 022","pm_missing":false,"external":false,"recoverable":null,"start":"2025-07","finish":"2026-12","duration_months":17.0,"effort_raw":8.44,"resource_count":4,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.935,"plot_y":1.887},{"id":84,"name":"Initiative 072","lead":"Workstream D","category":"Training","sa":5.0,"impact":2.0,"impact_level":"L","pm":"Employee 041","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-08","duration_months":5.0,"effort_raw":3.24,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.835,"plot_y":2.033},{"id":85,"name":"Initiative 073","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2025-10","finish":"2026-04","duration_months":6.0,"effort_raw":3.4,"resource_count":3,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.064,"plot_y":1.826},{"id":86,"name":"Initiative 074","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-12","finish":"2026-04","duration_months":4.0,"effort_raw":2.16,"resource_count":3,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.004,"plot_y":1.902},{"id":87,"name":"Initiative 075","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-06","finish":"2027-04","duration_months":10.0,"effort_raw":4.26,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.052,"plot_y":1.883},{"id":88,"name":"Initiative 076","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2026-03","finish":"2027-01","duration_months":10.1,"effort_raw":6.28,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.069,"plot_y":1.959},{"id":89,"name":"Initiative 077","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-04","finish":"2026-12","duration_months":8.0,"effort_raw":5.34,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.157,"plot_y":1.87},{"id":90,"name":"Initiative 078","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":2.83,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":4.943,"plot_y":1.861},{"id":91,"name":"Initiative 079","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-04","finish":"2026-08","duration_months":4.0,"effort_raw":4.17,"resource_count":3,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.153,"plot_y":2.136},{"id":92,"name":"Initiative 085","lead":"Workstream C","category":"Data and modelling","sa":5.0,"impact":5.0,"impact_level":"H","pm":"Employee 060","pm_missing":false,"external":false,"recoverable":null,"start":"2026-05","finish":"2027-09","duration_months":15.9,"effort_raw":4.26,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.913,"plot_y":5.058},{"id":93,"name":"Initiative 086","lead":"Workstream C","category":"Data and modelling","sa":5.0,"impact":5.0,"impact_level":"H","pm":"Employee 060","pm_missing":false,"external":true,"recoverable":null,"start":"2024-06","finish":"2026-06","duration_months":24.0,"effort_raw":11.5,"resource_count":5,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":5.114,"plot_y":5.02},{"id":94,"name":"Initiative 091","lead":"Workstream C","category":"Regulatory","sa":5.0,"impact":5.0,"impact_level":"H","pm":"PM 26","pm_missing":false,"external":false,"recoverable":null,"start":"2025-10","finish":"2026-07","duration_months":9.0,"effort_raw":5.39,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":5.011,"plot_y":4.907},{"id":95,"name":"Initiative 092","lead":"Workstream C","category":"Regulatory","sa":5.0,"impact":5.0,"impact_level":"H","pm":"Employee 060","pm_missing":false,"external":false,"recoverable":null,"start":"2025-09","finish":"2027-02","duration_months":17.0,"effort_raw":8.34,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.854,"plot_y":5.143}];
+
+// ─── DESIGN SYSTEM ───────────────────────────────────────────────────
+const T = {
+  bg:        "#fbf9f4",
+  bgElev:    "#ffffff",
+  bgGrid:    "#f4f1e8",
+  bgSection: "#f0ece2",
+  bgInvert:  "#0a1f33",
+  ink:       "#0a1f33",
+  inkSoft:   "#2c3e50",
+  subdued:   "#64748b",
+  muted:     "#94a3b8",
+  rule:      "#e2dfd6",
+  ruleStrong:"#cdc7b8",
+  amber:     "#b45309",
+  amberSoft: "#fef3c7",
+  amberDeep: "#92400e",
+  teal:      "#0f766e",
+  red:       "#b91c1c",
+  redDeep:   "#7f1d1d",
+  redSoft:   "#fee2e2",
+  green:     "#15803d",
+};
+
+// ─── QUADRANT MODEL: Strategic Alignment × Impact ────────────────────
+const QUAD = {
+  "Core Bets": {
+    code: "CB",
+    color: T.ink,
+    label: "Core Bets",
+    desc: "High alignment · high impact.",
+    counsel: "Resource generously and protect from drift.",
+  },
+  "Steady State": {
+    code: "SS",
+    color: T.teal,
+    label: "Steady State",
+    desc: "Aligned · lower impact.",
+    counsel: "Keep moving. Don't let these crowd out Core Bets.",
+  },
+  "Question Marks": {
+    code: "QM",
+    color: T.red,
+    label: "Question Marks",
+    desc: "High impact · off-strategy.",
+    counsel: "Either re-articulate the strategy or stop the work.",
+  },
+  "Reconsider": {
+    code: "RC",
+    color: T.muted,
+    label: "Reconsider",
+    desc: "Low alignment · low impact.",
+    counsel: "Stop, defer, or radically descope.",
+  },
+};
+
+const SA_THRESHOLD = 3;
+const IMPACT_THRESHOLD = 3;
+
+function classifyQuadrant(d) {
+  const hiSA = d.sa >= SA_THRESHOLD;
+  const hiI  = d.impact >= IMPACT_THRESHOLD;
+  if (hiSA && hiI)  return "Core Bets";
+  if (hiSA && !hiI) return "Steady State";
+  if (!hiSA && hiI) return "Question Marks";
+  return "Reconsider";
+}
+DATA.forEach((d) => (d.quadrant = classifyQuadrant(d)));
+
+function dateToFloat(s) {
+  if (!s) return null;
+  const parts = s.split("-");
+  return parseInt(parts[0], 10) + ((parts.length > 1 ? parseInt(parts[1], 10) : 1) - 1) / 12;
+}
+const TODAY = 2026 + 3 / 12;
+
+// ─── HOT SPOTS ───────────────────────────────────────────────────────
+function computeHotSpots(data) {
+  const total = data.length;
+  const core       = data.filter((d) => d.quadrant === "Core Bets");
+  const qmarks     = data.filter((d) => d.quadrant === "Question Marks");
+  const reconsider = data.filter((d) => d.quadrant === "Reconsider");
+  const pmGaps     = data.filter((d) => d.pm_missing);
+  const external   = data.filter((d) => d.external);
+  const longRun    = data.filter((d) => d.duration_months && d.duration_months >= 18);
+
+  const leadCounts = {};
+  core.forEach((d) => { leadCounts[d.lead] = (leadCounts[d.lead] || 0) + 1; });
+  const leadRanked = Object.entries(leadCounts).sort((a, b) => b[1] - a[1]);
+
+  return [
+    {
+      code: "01",
+      title: "Concentration of Core Bets",
+      stat: core.length,
+      unit: `of ${total} initiatives`,
+      severity: "medium",
+      body: `${Math.round((core.length / total) * 100)}% of the portfolio sits in the high-alignment, high-impact quadrant. The question for leadership: are these properly sequenced and resourced, or competing for the same scarce capacity?`,
+    },
+    {
+      code: "02",
+      title: "Question Marks worth questioning",
+      stat: qmarks.length,
+      unit: "high-impact · off-strategy",
+      severity: "high",
+      body: `${qmarks.length} initiative${qmarks.length === 1 ? "" : "s"} ${qmarks.length === 1 ? "is delivering" : "are delivering"} high impact without clear strategic alignment. Either the strategy is incomplete and needs to be re-articulated to include them, or the work is off-mission and should stop. Ambiguity here costs more than either decision.`,
+    },
+    {
+      code: "03",
+      title: "Ownership voids in flight",
+      stat: pmGaps.length,
+      unit: "without firm PM",
+      severity: pmGaps.length > 10 ? "high" : "medium",
+      body: `${pmGaps.length} initiatives carry TBC, TBD, or empty PM fields. Initiatives without named accountability slip silently — assign owners or pause within the next planning cycle.`,
+    },
+    {
+      code: "04",
+      title: "External dependency cluster",
+      stat: external.length,
+      unit: "need external resourcing",
+      severity: "medium",
+      body: `${external.length} initiatives explicitly require external support. Treat as a single procurement and capacity question — not as ${external.length} separate ones — to surface contention early.`,
+    },
+    {
+      code: "05",
+      title: "Drag from the Reconsider quadrant",
+      stat: reconsider.length,
+      unit: "candidates to stop or descope",
+      severity: "medium",
+      body: `${reconsider.length} initiatives sit low on both alignment and impact. Halving this list frees meaningful capacity for Core Bets without shrinking ambition.`,
+    },
+    {
+      code: "06",
+      title: leadRanked[0] ? `${leadRanked[0][0]} carries the most Core Bets` : "Lead workload",
+      stat: leadRanked[0] ? leadRanked[0][1] : 0,
+      unit: "Core Bets owned",
+      severity: "low",
+      body: leadRanked[0]
+        ? `${leadRanked[0][0]} owns ${leadRanked[0][1]} Core Bet${leadRanked[0][1] === 1 ? "" : "s"}${leadRanked[1] ? `, followed by ${leadRanked[1][0]} (${leadRanked[1][1]})` : ""}. Validate that lead-level capacity matches the implied commitment.`
+        : "",
+    },
+  ];
+}
+
+// ─── LOGO ────────────────────────────────────────────────────────────
+function Logo({ light }) {
+  const fg = light ? T.bg : T.ink;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <svg width="28" height="28" viewBox="0 0 28 28" style={{ display: "block" }}>
+        <rect x="0" y="0" width="28" height="28" rx="3" fill={fg} />
+        <text x="14" y="19" textAnchor="middle" fontSize="13" fontWeight="800" fill={T.bg} fontFamily="var(--f-sans)" letterSpacing="-0.5">BC</text>
+        <rect x="22" y="22" width="4" height="4" fill={T.amber} />
+      </svg>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
+        <span style={{ fontFamily: "var(--f-sans)", fontWeight: 700, fontSize: 15, color: fg, letterSpacing: "-0.02em" }}>BigCompany</span>
+        <span style={{ fontFamily: "var(--f-mono)", fontSize: 10, color: light ? "#a8b8c8" : T.subdued }}>.com</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── 2x2 MATRIX ──────────────────────────────────────────────────────
+function Matrix({ data, onSelect, hovered, setHovered, filterQuadrant }) {
+  const W = 800, H = 560;
+  const PAD = { l: 80, r: 40, t: 60, b: 70 };
+  const innerW = W - PAD.l - PAD.r, innerH = H - PAD.t - PAD.b;
+  // Both axes: 1 (low) to 5 (high)
+  const xS = (v) => PAD.l + ((v - 1) / 4) * innerW;
+  const yS = (v) => PAD.t + (1 - (v - 1) / 4) * innerH;
+  const xMid = xS(SA_THRESHOLD), yMid = yS(IMPACT_THRESHOLD);
+  const filtered = filterQuadrant ? data.filter((d) => d.quadrant === filterQuadrant) : data;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block", fontFamily: "var(--f-sans)" }}>
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M 40 0 L 0 0 0 40" fill="none" stroke={T.rule} strokeWidth="0.5" opacity="0.6" />
+        </pattern>
+      </defs>
+      <rect x={PAD.l} y={PAD.t} width={innerW} height={innerH} fill={T.bgElev} />
+      <rect x={PAD.l} y={PAD.t} width={innerW} height={innerH} fill="url(#grid)" />
+
+      {/* Quadrant tints */}
+      <rect x={xMid} y={PAD.t} width={innerW - (xMid - PAD.l)} height={yMid - PAD.t} fill={T.ink} opacity="0.05" />
+      <rect x={PAD.l} y={PAD.t} width={xMid - PAD.l} height={yMid - PAD.t} fill={T.red} opacity="0.05" />
+
+      <rect x={PAD.l} y={PAD.t} width={innerW} height={innerH} fill="none" stroke={T.ink} strokeWidth="1" />
+      <line x1={xMid} y1={PAD.t} x2={xMid} y2={PAD.t + innerH} stroke={T.ink} strokeWidth="0.5" strokeDasharray="3 3" opacity="0.4" />
+      <line x1={PAD.l} y1={yMid} x2={PAD.l + innerW} y2={yMid} stroke={T.ink} strokeWidth="0.5" strokeDasharray="3 3" opacity="0.4" />
+
+      {/* Quadrant corner labels */}
+      <text x={PAD.l + 12} y={PAD.t + 22} fontSize="9" letterSpacing="2.5" fill={T.red} fontWeight="700">QUESTION MARKS</text>
+      <text x={PAD.l + innerW - 12} y={PAD.t + 22} fontSize="9" letterSpacing="2.5" fill={T.ink} fontWeight="700" textAnchor="end">CORE BETS</text>
+      <text x={PAD.l + 12} y={PAD.t + innerH - 12} fontSize="9" letterSpacing="2.5" fill={T.subdued} fontWeight="700">RECONSIDER</text>
+      <text x={PAD.l + innerW - 12} y={PAD.t + innerH - 12} fontSize="9" letterSpacing="2.5" fill={T.teal} fontWeight="700" textAnchor="end">STEADY STATE</text>
+
+      {/* Axis labels */}
+      <text x={PAD.l + innerW / 2} y={H - 22} fontSize="10" letterSpacing="2.5" fill={T.ink} textAnchor="middle" fontWeight="600">STRATEGIC ALIGNMENT  →</text>
+      <text x={20} y={PAD.t + innerH / 2} fontSize="10" letterSpacing="2.5" fill={T.ink} textAnchor="middle" fontWeight="600" transform={`rotate(-90, 20, ${PAD.t + innerH / 2})`}>↑  IMPACT</text>
+
+      {/* Numeric scale ticks (1-5) */}
+      {[1, 2, 3, 4, 5].map((n) => (
+        <g key={`xt${n}`}>
+          <line x1={xS(n)} y1={PAD.t + innerH} x2={xS(n)} y2={PAD.t + innerH + 4} stroke={T.ink} strokeWidth="0.5" />
+          <text x={xS(n)} y={H - PAD.b + 18} fontSize="9" fill={T.subdued} textAnchor="middle" fontFamily="var(--f-mono)">{n}</text>
+        </g>
+      ))}
+      {[1, 2, 3, 4, 5].map((n) => (
+        <g key={`yt${n}`}>
+          <line x1={PAD.l - 4} y1={yS(n)} x2={PAD.l} y2={yS(n)} stroke={T.ink} strokeWidth="0.5" />
+          <text x={PAD.l - 8} y={yS(n) + 3} fontSize="9" fill={T.subdued} textAnchor="end" fontFamily="var(--f-mono)">{n}</text>
+        </g>
+      ))}
+      <text x={PAD.l - 8} y={yS(5) - 8} fontSize="9" fill={T.subdued} textAnchor="end" fontStyle="italic">High</text>
+      <text x={PAD.l - 8} y={yS(1) + 16} fontSize="9" fill={T.subdued} textAnchor="end" fontStyle="italic">Low</text>
+      <text x={xS(1)} y={H - PAD.b + 30} fontSize="9" fill={T.subdued} textAnchor="middle" fontStyle="italic">Low</text>
+      <text x={xS(5)} y={H - PAD.b + 30} fontSize="9" fill={T.subdued} textAnchor="middle" fontStyle="italic">High</text>
+
+      {filtered.map((d) => {
+        const cx = xS(d.plot_x), cy = yS(d.plot_y);
+        const meta = QUAD[d.quadrant];
+        const isHov = hovered && hovered.id === d.id;
+        const r = 5 + Math.min(d.resource_count, 5) * 0.8;
+        return (
+          <g key={d.id}>
+            <circle cx={cx} cy={cy} r={r + 4} fill={meta.color} opacity={isHov ? 0.18 : 0} style={{ transition: "opacity 0.15s" }} />
+            <circle
+              cx={cx} cy={cy} r={r}
+              fill={d.impact_level === "H" ? meta.color : T.bgElev}
+              stroke={meta.color}
+              strokeWidth={d.impact_level === "H" ? 0 : 1.5}
+              opacity={isHov ? 1 : 0.88}
+              style={{ cursor: "pointer", transition: "opacity 0.15s" }}
+              onMouseEnter={() => setHovered(d)}
+              onMouseLeave={() => setHovered(null)}
+              onClick={() => onSelect(d)}
+            />
+            {d.external && <circle cx={cx + r * 0.7} cy={cy - r * 0.7} r={2} fill={T.amber} pointerEvents="none" />}
+          </g>
+        );
+      })}
+
+      {hovered && (
+        <g pointerEvents="none">
+          <rect x={Math.min(xS(hovered.plot_x) + 14, W - 280)} y={Math.max(yS(hovered.plot_y) - 44, PAD.t)} width="270" height="78" fill={T.ink} rx="2" />
+          <text x={Math.min(xS(hovered.plot_x) + 24, W - 270)} y={Math.max(yS(hovered.plot_y) - 24, PAD.t + 18)} fontSize="11" fill={T.bg} fontWeight="700">{hovered.name}</text>
+          <text x={Math.min(xS(hovered.plot_x) + 24, W - 270)} y={Math.max(yS(hovered.plot_y) - 8, PAD.t + 34)} fontSize="9" fill="#a8b8c8" letterSpacing="1.5">
+            {hovered.lead.toUpperCase()}  ·  {hovered.quadrant.toUpperCase()}
+          </text>
+          <text x={Math.min(xS(hovered.plot_x) + 24, W - 270)} y={Math.max(yS(hovered.plot_y) + 8, PAD.t + 50)} fontSize="9" fill="#a8b8c8" fontFamily="var(--f-mono)">
+            SA {hovered.sa.toFixed(1)}  ·  IMP {hovered.impact.toFixed(1)}
+          </text>
+          <text x={Math.min(xS(hovered.plot_x) + 24, W - 270)} y={Math.max(yS(hovered.plot_y) + 24, PAD.t + 66)} fontSize="9" fill="#a8b8c8">Click for full record</text>
+        </g>
+      )}
+    </svg>
+  );
+}
+
+// ─── TIMELINE ────────────────────────────────────────────────────────
+function Timeline({ data, onSelect, groupBy }) {
+  const X_START = 2024, X_END = 2029, ROW_H = 24;
+  const items = data.filter((d) => d.start && d.finish).map((d) => ({ ...d, _s: dateToFloat(d.start), _f: dateToFloat(d.finish) }));
+  let groups = {};
+  if (groupBy === "lead") items.forEach((d) => { groups[d.lead] = groups[d.lead] || []; groups[d.lead].push(d); });
+  else items.forEach((d) => { groups[d.quadrant] = groups[d.quadrant] || []; groups[d.quadrant].push(d); });
+  const groupOrder = groupBy === "lead"
+    ? Object.keys(groups).sort()
+    : ["Core Bets", "Question Marks", "Steady State", "Reconsider"].filter((g) => groups[g]);
+  groupOrder.forEach((g) => groups[g].sort((a, b) => a._s - b._s));
+
+  const HDR_H = 60, GRP_H = 38, GAP = 8;
+  let y = HDR_H;
+  const rows = [];
+  groupOrder.forEach((g) => {
+    rows.push({ y, header: g, count: groups[g].length });
+    y += GRP_H;
+    groups[g].forEach((it) => { rows.push({ y, item: it }); y += ROW_H; });
+    y += GAP;
+  });
+  const totalH = y + 30;
+
+  const PAD_L = 240, PAD_R = 60, W = 1200;
+  const innerW = W - PAD_L - PAD_R;
+  const xS = (yr) => PAD_L + ((Math.max(X_START, Math.min(X_END, yr)) - X_START) / (X_END - X_START)) * innerW;
+  const years = [2024, 2025, 2026, 2027, 2028, 2029];
+  const quarters = [];
+  for (let yr = X_START; yr < X_END; yr++) for (let q = 1; q <= 4; q++) quarters.push(yr + (q - 1) * 0.25);
+
+  return (
+    <div style={{ overflowX: "auto", border: `1px solid ${T.rule}`, background: T.bgElev, borderRadius: 4 }}>
+      <svg viewBox={`0 0 ${W} ${totalH}`} style={{ width: "100%", minWidth: 1000, display: "block", fontFamily: "var(--f-sans)" }}>
+        {quarters.map((q, i) => <line key={"q" + i} x1={xS(q)} y1={HDR_H} x2={xS(q)} y2={totalH - 30} stroke={T.rule} strokeWidth="0.5" strokeDasharray="2 4" opacity="0.5" />)}
+        {years.map((yr) => <line key={"y" + yr} x1={xS(yr)} y1={HDR_H - 8} x2={xS(yr)} y2={totalH - 30} stroke={T.ink} strokeWidth="0.5" opacity="0.3" />)}
+        {years.slice(0, -1).map((yr) => (
+          <text key={"yl" + yr} x={xS(yr + 0.5)} y={28} fontSize="13" fill={T.ink} textAnchor="middle" fontFamily="var(--f-mono)" fontWeight="600">{yr}</text>
+        ))}
+        {quarters.filter((q) => q !== Math.floor(q)).map((q, i) => (
+          <text key={"ql" + i} x={xS(q + 0.125)} y={48} fontSize="9" fill={T.subdued} textAnchor="middle" letterSpacing="1.5" fontFamily="var(--f-mono)">
+            Q{Math.round((q - Math.floor(q)) * 4) + 1}
+          </text>
+        ))}
+
+        <line x1={xS(TODAY)} y1={HDR_H - 12} x2={xS(TODAY)} y2={totalH - 30} stroke={T.amber} strokeWidth="1.5" />
+        <rect x={xS(TODAY) - 26} y={HDR_H - 26} width="52" height="14" fill={T.amber} />
+        <text x={xS(TODAY)} y={HDR_H - 16} fontSize="9" fill={T.bg} textAnchor="middle" letterSpacing="2" fontWeight="700">TODAY</text>
+
+        {rows.map((r, i) => {
+          if (r.header) {
+            const groupColor = groupBy === "quadrant" ? QUAD[r.header].color : T.ink;
+            return (
+              <g key={"g" + i}>
+                <line x1={20} y1={r.y + 22} x2={PAD_L - 12} y2={r.y + 22} stroke={groupColor} strokeWidth="1" />
+                <text x={20} y={r.y + 18} fontSize="10" letterSpacing="2.5" fill={groupColor} fontWeight="800">{r.header.toUpperCase()}</text>
+                <text x={PAD_L - 8} y={r.y + 18} fontSize="10" fill={T.subdued} textAnchor="end" fontFamily="var(--f-mono)">{r.count} item{r.count !== 1 ? "s" : ""}</text>
+              </g>
+            );
+          }
+          const d = r.item;
+          const meta = QUAD[d.quadrant];
+          const x1 = xS(d._s), x2 = xS(d._f);
+          const isOverrun = d._f > X_END;
+          const isInFlight = d._s <= TODAY && d._f >= TODAY;
+          const isComplete = d._f < TODAY;
+          return (
+            <g key={"r" + i} style={{ cursor: "pointer" }} onClick={() => onSelect(d)}>
+              <rect x={20} y={r.y} width={W - 40} height={ROW_H} fill="transparent"
+                onMouseEnter={(e) => e.currentTarget.setAttribute("fill", T.bgGrid)}
+                onMouseLeave={(e) => e.currentTarget.setAttribute("fill", "transparent")} />
+              <text x={PAD_L - 12} y={r.y + 16} fontSize="11" fill={T.ink} textAnchor="end" fontWeight="500">{d.name}</text>
+              <line x1={PAD_L} y1={r.y + 12} x2={W - PAD_R} y2={r.y + 12} stroke={T.rule} strokeWidth="0.5" opacity="0.5" />
+              <rect x={x1} y={r.y + 6} width={Math.max(x2 - x1, 4)} height={12} fill={meta.color} opacity={isComplete ? 0.3 : d.impact_level === "H" ? 0.95 : 0.6} rx="1" />
+              {isInFlight && <rect x={x1} y={r.y + 6} width={Math.max(xS(TODAY) - x1, 0)} height={12} fill={T.ink} opacity="0.18" rx="1" />}
+              {d.external && <circle cx={x1 - 6} cy={r.y + 12} r={2.5} fill={T.amber} />}
+              {isOverrun && <polygon points={`${W - PAD_R - 2},${r.y + 6} ${W - PAD_R + 8},${r.y + 12} ${W - PAD_R - 2},${r.y + 18}`} fill={meta.color} opacity="0.7" />}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// ─── HEATMAP ─────────────────────────────────────────────────────────
+function Heatmap({ data }) {
+  const leads = [...new Set(data.map((d) => d.lead))].sort();
+  const quads = ["Core Bets", "Question Marks", "Steady State", "Reconsider"];
+  const matrix = {};
+  leads.forEach((l) => (matrix[l] = { "Core Bets": 0, "Question Marks": 0, "Steady State": 0, "Reconsider": 0, total: 0 }));
+  data.forEach((d) => {
+    if (matrix[d.lead]) {
+      matrix[d.lead][d.quadrant] += 1;
+      matrix[d.lead].total += 1;
+    }
+  });
+  const max = Math.max(...leads.flatMap((l) => quads.map((q) => matrix[l][q])));
+
+  return (
+    <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "var(--f-sans)", background: T.bgElev, border: `1px solid ${T.rule}`, borderRadius: 4 }}>
+      <thead>
+        <tr>
+          <th style={{ textAlign: "left", padding: "16px", fontSize: 10, letterSpacing: 2, color: T.subdued, fontWeight: 700, borderBottom: `1px solid ${T.rule}` }}>WORKSTREAM</th>
+          {quads.map((q) => (
+            <th key={q} style={{ textAlign: "center", padding: "16px", fontSize: 10, letterSpacing: 2, color: QUAD[q].color, fontWeight: 700, borderBottom: `1px solid ${T.rule}`, width: 110 }}>
+              {q.toUpperCase()}
+            </th>
+          ))}
+          <th style={{ textAlign: "right", padding: "16px", fontSize: 10, letterSpacing: 2, color: T.subdued, fontWeight: 700, borderBottom: `1px solid ${T.rule}` }}>TOTAL</th>
+        </tr>
+      </thead>
+      <tbody>
+        {leads.sort((a, b) => matrix[b].total - matrix[a].total).map((l, idx) => (
+          <tr key={l} style={{ borderBottom: idx < leads.length - 1 ? `1px solid ${T.rule}` : "none" }}>
+            <td style={{ padding: "16px", fontSize: 14, color: T.ink, fontWeight: 600 }}>{l}</td>
+            {quads.map((q) => {
+              const v = matrix[l][q];
+              const intensity = max > 0 ? v / max : 0;
+              const bg = QUAD[q].color;
+              return (
+                <td key={q} style={{ textAlign: "center", padding: "8px" }}>
+                  <span style={{
+                    display: "inline-block", minWidth: 40, padding: "8px 12px", fontSize: 13,
+                    fontFamily: "var(--f-mono)", fontWeight: 600,
+                    color: intensity > 0.4 ? T.bg : T.ink,
+                    background: v === 0 ? "transparent" : bg,
+                    opacity: v === 0 ? 0.25 : 0.4 + intensity * 0.6,
+                    borderRadius: 2,
+                  }}>{v}</span>
+                </td>
+              );
+            })}
+            <td style={{ textAlign: "right", padding: "16px", fontSize: 13, fontFamily: "var(--f-mono)", color: T.ink, fontWeight: 700 }}>{matrix[l].total}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+// ─── DETAIL DRAWER ───────────────────────────────────────────────────
+function Drawer({ initiative, onClose }) {
+  if (!initiative) return null;
+  const meta = QUAD[initiative.quadrant];
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(10, 31, 51, 0.5)", zIndex: 50, display: "flex", justifyContent: "flex-end", animation: "fadeIn 0.2s ease" }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "min(560px, 100%)", height: "100%", background: T.bg, padding: "32px 40px", overflowY: "auto", boxShadow: "-30px 0 60px rgba(0,0,0,0.2)", animation: "slideIn 0.3s ease" }}>
+        <button onClick={onClose} style={{ position: "absolute", top: 24, right: 24, background: "none", border: `1px solid ${T.ink}`, color: T.ink, width: 32, height: 32, cursor: "pointer", fontSize: 16, fontWeight: 600, borderRadius: 2 }}>×</button>
+
+        <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 16 }}>
+          <span style={{ fontSize: 9, letterSpacing: 2, color: meta.color, fontWeight: 800, padding: "4px 8px", border: `1px solid ${meta.color}`, borderRadius: 2 }}>{meta.code}</span>
+          <span style={{ fontSize: 10, letterSpacing: 2, color: T.subdued, fontWeight: 700 }}>{meta.label.toUpperCase()}</span>
+        </div>
+
+        <h3 style={{ fontFamily: "var(--f-sans)", fontSize: 28, fontWeight: 700, lineHeight: 1.15, color: T.ink, margin: "0 0 24px", letterSpacing: "-0.02em" }}>{initiative.name}</h3>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, paddingBottom: 24, marginBottom: 24, borderBottom: `1px solid ${T.rule}` }}>
+          <DR label="WORKSTREAM" value={initiative.lead} />
+          <DR label="CATEGORY" value={initiative.category} />
+          <DR label="STRATEGIC ALIGN." value={initiative.sa.toFixed(1)} mono big />
+          <DR label="IMPACT" value={initiative.impact.toFixed(1)} mono big />
+          <DR label="PM" value={initiative.pm} flag={initiative.pm_missing} />
+          <DR label="EXTERNAL" value={initiative.external ? "REQUIRED" : "No"} flag={initiative.external} />
+          <DR label="START" value={initiative.start || "—"} mono />
+          <DR label="FINISH" value={initiative.finish || "—"} mono />
+          <DR label="DURATION" value={initiative.duration_months ? `${initiative.duration_months} mo` : "—"} mono />
+          <DR label="RESOURCES" value={initiative.resource_count} mono />
+        </div>
+
+        {initiative.shared_resources && <Block label="SHARED RESOURCES" body={initiative.shared_resources} />}
+        {initiative.consultancy_spend ? <Block label="FY27 CONSULTANCY" body={`$${initiative.consultancy_spend.toLocaleString()}`} /> : null}
+
+        <div style={{ marginTop: 24, padding: "20px", background: T.bgInvert, color: T.bg, borderRadius: 4 }}>
+          <div style={{ fontSize: 9, letterSpacing: 2.5, color: "#a8b8c8", marginBottom: 8, fontWeight: 700 }}>RECOMMENDATION</div>
+          <div style={{ fontSize: 16, lineHeight: 1.5, fontWeight: 500 }}>{meta.counsel}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DR({ label, value, mono, big, flag }) {
+  return (
+    <div>
+      <div style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, marginBottom: 6, fontWeight: 700 }}>{label}</div>
+      <div style={{
+        fontSize: big ? 18 : 14,
+        fontFamily: mono ? "var(--f-mono)" : "var(--f-sans)",
+        color: flag ? T.amberDeep : T.ink,
+        fontWeight: flag ? 700 : big ? 700 : 500,
+      }}>{value}</div>
+    </div>
+  );
+}
+
+function Block({ label, body }) {
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, marginBottom: 6, fontWeight: 700 }}>{label}</div>
+      <div style={{ fontSize: 14, color: T.inkSoft, lineHeight: 1.55 }}>{body}</div>
+    </div>
+  );
+}
+
+// ─── KPI CARD ────────────────────────────────────────────────────────
+function KPI({ value, label, sub, flag, accent }) {
+  return (
+    <div style={{
+      background: T.bgElev, border: `1px solid ${T.rule}`, borderRadius: 4,
+      padding: "20px 22px",
+      borderTop: `2px solid ${flag ? T.amber : accent || T.ink}`,
+    }}>
+      <div style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, fontWeight: 700, marginBottom: 8 }}>{label}</div>
+      <div style={{
+        fontFamily: "var(--f-mono)", fontSize: 36, fontWeight: 600,
+        color: flag ? T.amberDeep : T.ink,
+        lineHeight: 1, letterSpacing: "-0.02em",
+      }}>{value}</div>
+      {sub && <div style={{ fontSize: 11, color: T.subdued, marginTop: 8, fontWeight: 500 }}>{sub}</div>}
+    </div>
+  );
+}
+
+// ─── TIMELINE SUMMARY ────────────────────────────────────────────────
+function TimelineSummary({ data }) {
+  const items = data.filter((d) => d.start && d.finish);
+  const inFlight = items.filter((d) => dateToFloat(d.start) <= TODAY && dateToFloat(d.finish) >= TODAY).length;
+  const startingQ = items.filter((d) => dateToFloat(d.start) > TODAY && dateToFloat(d.start) <= TODAY + 0.25).length;
+  const finishingQ = items.filter((d) => dateToFloat(d.finish) >= TODAY && dateToFloat(d.finish) <= TODAY + 0.25).length;
+  const longRunners = items.filter((d) => d.duration_months && d.duration_months >= 18).length;
+  const overdue = items.filter((d) => dateToFloat(d.finish) < TODAY).length;
+
+  const cards = [
+    { v: inFlight, l: "IN FLIGHT", s: "Active right now" },
+    { v: startingQ, l: "STARTING Q+1", s: "Resourcing decisions due" },
+    { v: finishingQ, l: "FINISHING THIS Q", s: "Closure & handover" },
+    { v: longRunners, l: "≥ 18 MONTHS", s: "Re-commit at milestones" },
+    { v: overdue, l: "PAST FINISH", s: "Status reconciliation", flag: overdue > 0 },
+  ];
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12, marginBottom: 24 }}>
+      {cards.map((c, i) => <KPI key={i} value={c.v} label={c.l} sub={c.s} flag={c.flag} />)}
+    </div>
+  );
+}
+
+// ─── MAIN APP ────────────────────────────────────────────────────────
+function App() {
+  const [hovered, setHovered] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [filterLead, setFilterLead] = useState("ALL");
+  const [filterQuadrant, setFilterQuadrant] = useState(null);
+  const [view, setView] = useState("matrix");
+  const [tlGroupBy, setTlGroupBy] = useState("lead");
+
+  useEffect(() => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = "https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap";
+    document.head.appendChild(link);
+    const style = document.createElement("style");
+    style.innerHTML = `
+      :root {
+        --f-sans: 'Manrope', system-ui, sans-serif;
+        --f-mono: 'IBM Plex Mono', monospace;
+      }
+      @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+      @keyframes slideIn { from { transform: translateX(40px); opacity: 0 } to { transform: translateX(0); opacity: 1 } }
+      @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+      .pulse { animation: pulse 2s ease-in-out infinite; }
+      button { font-family: var(--f-sans); }
+      * { box-sizing: border-box; }
+    `;
+    document.head.appendChild(style);
+  }, []);
+
+  const filtered = useMemo(() => {
+    let d = DATA;
+    if (filterLead !== "ALL") d = d.filter((x) => x.lead === filterLead);
+    if (filterQuadrant) d = d.filter((x) => x.quadrant === filterQuadrant);
+    return d;
+  }, [filterLead, filterQuadrant]);
+
+  const matrixData = useMemo(() => {
+    return filterLead === "ALL" ? DATA : DATA.filter((x) => x.lead === filterLead);
+  }, [filterLead]);
+
+  const hotSpots = useMemo(() => computeHotSpots(matrixData), [matrixData]);
+  const leads = useMemo(() => ["ALL", ...new Set(DATA.map((d) => d.lead))].sort(), []);
+
+  const stats = useMemo(() => {
+    const t = matrixData.length;
+    const core = matrixData.filter((d) => d.quadrant === "Core Bets").length;
+    const qm = matrixData.filter((d) => d.quadrant === "Question Marks").length;
+    const consultancy = matrixData.reduce((s, d) => s + (d.consultancy_spend || 0), 0);
+    const pmGap = matrixData.filter((d) => d.pm_missing).length;
+    const ext = matrixData.filter((d) => d.external).length;
+    const ws = new Set(matrixData.map((d) => d.lead)).size;
+    return { t, core, qm, consultancy, pmGap, ext, ws };
+  }, [matrixData]);
+
+  const quadCounts = useMemo(() => {
+    const c = { "Core Bets": 0, "Question Marks": 0, "Steady State": 0, "Reconsider": 0 };
+    matrixData.forEach((d) => (c[d.quadrant] += 1));
+    return c;
+  }, [matrixData]);
+
+  return (
+    <div style={{ background: T.bg, color: T.ink, minHeight: "100vh", fontFamily: "var(--f-sans)" }}>
+
+      {/* HEADER */}
+      <header style={{
+        background: T.bgElev, borderBottom: `1px solid ${T.ruleStrong}`,
+        padding: "14px 32px", display: "flex", alignItems: "center", justifyContent: "space-between",
+        position: "sticky", top: 0, zIndex: 30, backdropFilter: "blur(8px)",
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
+          <Logo />
+          <div style={{ height: 24, width: 1, background: T.rule }}></div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>Portfolio Diagnostic</div>
+            <div style={{ fontSize: 10, color: T.subdued, fontWeight: 500, marginTop: 1 }}>
+              Q1 FY27  ·  {DATA.length} initiatives  ·  {leads.length - 1} workstreams
+            </div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span className="pulse" style={{ width: 6, height: 6, borderRadius: "50%", background: T.green }}></span>
+          <span style={{ fontSize: 10, color: T.subdued, letterSpacing: 1.5, fontWeight: 600 }}>DATA CURRENT · 17 MAR 2026</span>
+        </div>
+      </header>
+
+      {/* TABS */}
+      <nav style={{
+        background: T.bgElev, borderBottom: `1px solid ${T.rule}`,
+        padding: "0 32px", display: "flex", gap: 0,
+        position: "sticky", top: 65, zIndex: 29,
+      }}>
+        {[
+          { v: "matrix", l: "Matrix" },
+          { v: "timeline", l: "Timeline" },
+          { v: "leads", l: "Workstreams" },
+          { v: "list", l: "Register" },
+        ].map((t) => (
+          <button key={t.v} onClick={() => setView(t.v)} style={{
+            background: "transparent", border: "none", padding: "14px 20px",
+            fontSize: 13, fontWeight: view === t.v ? 700 : 500,
+            color: view === t.v ? T.ink : T.subdued, cursor: "pointer",
+            borderBottom: view === t.v ? `2px solid ${T.amber}` : "2px solid transparent",
+            marginBottom: -1, transition: "all 0.15s",
+          }}>{t.l}</button>
+        ))}
+      </nav>
+
+      {/* FILTERS */}
+      <div style={{
+        background: T.bg, borderBottom: `1px solid ${T.rule}`,
+        padding: "14px 32px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
+      }}>
+        <span style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, fontWeight: 700, marginRight: 4 }}>FILTER</span>
+        {leads.map((l) => (
+          <button key={l} onClick={() => setFilterLead(l)} style={{
+            background: filterLead === l ? T.ink : T.bgElev,
+            color: filterLead === l ? T.bg : T.inkSoft,
+            border: `1px solid ${filterLead === l ? T.ink : T.rule}`,
+            padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", borderRadius: 2,
+          }}>
+            {l === "ALL" ? "All" : l.replace("Workstream ", "WS ").replace("External Workstream", "External")}
+          </button>
+        ))}
+        {filterQuadrant && (
+          <>
+            <div style={{ height: 16, width: 1, background: T.rule, margin: "0 8px" }}></div>
+            <button onClick={() => setFilterQuadrant(null)} style={{
+              background: QUAD[filterQuadrant].color, color: T.bg, border: "none",
+              padding: "5px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", borderRadius: 2,
+            }}>{filterQuadrant} ✕</button>
+          </>
+        )}
+      </div>
+
+      {/* KPI STRIP */}
+      <div style={{ padding: "24px 32px 0", background: T.bg }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }}>
+          <KPI value={stats.t} label="INITIATIVES" sub="In current portfolio" />
+          <KPI value={stats.core} label="CORE BETS" sub={`${Math.round((stats.core / stats.t) * 100)}% of portfolio`} accent={T.ink} />
+          <KPI value={stats.qm} label="QUESTION MARKS" sub="High impact · off-strategy" accent={T.red} flag={stats.qm > 0} />
+          <KPI value={stats.ext} label="EXTERNAL DEPS" sub="Need procurement" />
+          <KPI value={stats.pmGap} label="PM GAPS" sub="Owner unassigned" flag={stats.pmGap > 10} />
+          <KPI value={`$${(stats.consultancy / 1000).toFixed(0)}K`} label="FY27 SPEND" sub="Consultancy committed" />
+        </div>
+      </div>
+
+      {/* MAIN */}
+      <main style={{ padding: "32px 32px 80px" }}>
+
+        {view === "matrix" && (
+          <>
+            <section style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 32, alignItems: "start", marginBottom: 48 }}>
+              <div style={{ background: T.bgElev, border: `1px solid ${T.rule}`, borderRadius: 4, padding: "24px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+                  <div>
+                    <div style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, fontWeight: 700 }}>STRATEGIC ALIGNMENT × IMPACT</div>
+                    <h2 style={{ fontSize: 22, fontWeight: 700, margin: "4px 0 0", letterSpacing: "-0.02em" }}>Prioritisation Matrix</h2>
+                  </div>
+                  <div style={{ fontSize: 10, color: T.subdued, fontWeight: 500, textAlign: "right", lineHeight: 1.4 }}>
+                    {filtered.length} of {DATA.length} shown<br/>
+                    <span style={{ fontFamily: "var(--f-mono)" }}>· hover · click for record ·</span>
+                  </div>
+                </div>
+                <Matrix data={matrixData} onSelect={setSelected} hovered={hovered} setHovered={setHovered} filterQuadrant={filterQuadrant} />
+              </div>
+
+              <div>
+                <div style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, fontWeight: 700, marginBottom: 12 }}>QUADRANT BREAKDOWN</div>
+                {Object.entries(quadCounts).map(([q, n]) => {
+                  const meta = QUAD[q];
+                  const active = filterQuadrant === q;
+                  return (
+                    <button key={q} onClick={() => setFilterQuadrant(active ? null : q)} style={{
+                      display: "block", width: "100%", textAlign: "left",
+                      padding: "16px 18px",
+                      background: active ? meta.color : T.bgElev,
+                      color: active ? T.bg : T.ink,
+                      border: `1px solid ${active ? meta.color : T.rule}`,
+                      borderRadius: 4, marginBottom: 8, cursor: "pointer",
+                      opacity: filterQuadrant && !active ? 0.5 : 1,
+                      transition: "all 0.15s",
+                    }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{
+                            display: "inline-block", width: 22, height: 22, lineHeight: "22px",
+                            background: active ? T.bg : meta.color,
+                            color: active ? meta.color : T.bg,
+                            fontSize: 9, fontWeight: 800, textAlign: "center", borderRadius: 2,
+                            fontFamily: "var(--f-mono)",
+                          }}>{meta.code}</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, letterSpacing: "-0.01em" }}>{meta.label}</span>
+                        </div>
+                        <span style={{ fontFamily: "var(--f-mono)", fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em" }}>{n}</span>
+                      </div>
+                      <div style={{ fontSize: 11, color: active ? "rgba(255,255,255,0.75)" : T.subdued, marginLeft: 30 }}>{meta.desc}</div>
+                    </button>
+                  );
+                })}
+                <div style={{ marginTop: 16, padding: "12px 14px", background: T.bgGrid, borderRadius: 4, fontSize: 11, color: T.subdued, lineHeight: 1.6 }}>
+                  <div style={{ marginBottom: 4 }}><span style={{ display: "inline-block", width: 8, height: 8, background: T.ink, marginRight: 8, borderRadius: "50%", verticalAlign: "middle" }}></span>Filled = High impact (≥4)</div>
+                  <div style={{ marginBottom: 4 }}><span style={{ display: "inline-block", width: 8, height: 8, background: "transparent", border: `1.5px solid ${T.teal}`, marginRight: 8, borderRadius: "50%", verticalAlign: "middle" }}></span>Open = Medium / Low impact</div>
+                  <div style={{ marginBottom: 4 }}><span style={{ display: "inline-block", width: 4, height: 4, background: T.amber, marginRight: 12, borderRadius: "50%", verticalAlign: "middle" }}></span>Copper dot = External dep.</div>
+                  <div style={{ fontStyle: "italic", marginTop: 6 }}>Dot size = resources allocated.</div>
+                </div>
+              </div>
+            </section>
+
+            {/* HOT SPOTS */}
+            <section>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 6 }}>
+                <span style={{ fontSize: 9, letterSpacing: 2, color: T.amber, fontWeight: 800 }}>◆ HOT SPOTS</span>
+              </div>
+              <h2 style={{ fontSize: 28, fontWeight: 700, margin: "0 0 8px", letterSpacing: "-0.02em" }}>Six findings for the leadership table</h2>
+              <p style={{ fontSize: 14, color: T.subdued, marginBottom: 24, maxWidth: 720, lineHeight: 1.5 }}>
+                Ordered by what most affects throughput this quarter. Each is a conversation worth having.
+              </p>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12 }}>
+                {hotSpots.map((h) => (
+                  <article key={h.code} style={{
+                    background: T.bgElev,
+                    border: `1px solid ${T.rule}`,
+                    borderLeft: `3px solid ${h.severity === "high" ? T.red : h.severity === "medium" ? T.ink : T.muted}`,
+                    borderRadius: 4, padding: "20px 22px",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 12 }}>
+                      <span style={{ fontFamily: "var(--f-mono)", fontSize: 11, color: T.subdued, fontWeight: 600 }}>{h.code}</span>
+                      <span style={{
+                        fontSize: 9, letterSpacing: 2, fontWeight: 700,
+                        color: h.severity === "high" ? T.redDeep : h.severity === "medium" ? T.ink : T.subdued,
+                        padding: "2px 6px",
+                        background: h.severity === "high" ? T.redSoft : T.bgGrid,
+                        borderRadius: 2,
+                      }}>{h.severity.toUpperCase()}</span>
+                    </div>
+                    <h3 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 14px", letterSpacing: "-0.01em" }}>{h.title}</h3>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 14 }}>
+                      <span style={{
+                        fontFamily: "var(--f-mono)", fontSize: 44, fontWeight: 600,
+                        color: h.severity === "high" ? T.redDeep : T.ink,
+                        letterSpacing: "-0.03em", lineHeight: 0.9,
+                      }}>{h.stat}</span>
+                      <span style={{ fontSize: 11, color: T.subdued, fontWeight: 500 }}>{h.unit}</span>
+                    </div>
+                    <p style={{ fontSize: 13, lineHeight: 1.6, color: T.inkSoft, margin: 0 }}>{h.body}</p>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            {/* LEADERSHIP CONVERSATIONS */}
+            <section style={{
+              marginTop: 32, background: T.bgInvert, color: T.bg,
+              padding: "48px 40px", borderRadius: 4,
+            }}>
+              <div style={{ fontSize: 9, letterSpacing: 2, color: T.amber, fontWeight: 800, marginBottom: 12 }}>◆ FOR THE LEADERSHIP TABLE</div>
+              <h2 style={{ fontSize: 32, fontWeight: 700, margin: "0 0 32px", letterSpacing: "-0.02em", lineHeight: 1.1, maxWidth: 800 }}>
+                Four conversations this portfolio is asking you to have.
+              </h2>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
+                {[
+                  { t: "Resource the Core Bets properly", d: "These are the items that earn their place on alignment AND impact. Confirm they're sequenced, named, and protected from drift before anything else gets attention." },
+                  { t: "Confront the Question Marks", d: "High-impact work without strategic alignment is the most expensive ambiguity in the portfolio. Either re-articulate the strategy to claim them, or stop them — but choose." },
+                  { t: "Close the ownership voids", d: "Initiatives without named PMs represent decisions not yet made. Assign owners or pause within 30 days." },
+                  { t: "Decide what to stop", d: "The Reconsider quadrant began with good intent. Halving it doesn't shrink ambition — it concentrates it where it counts." },
+                ].map((c, i) => (
+                  <div key={i} style={{ borderTop: `1px solid #2a3f55`, paddingTop: 20 }}>
+                    <div style={{ fontFamily: "var(--f-mono)", fontSize: 22, fontWeight: 600, color: T.amber, marginBottom: 10, letterSpacing: "-0.02em" }}>0{i + 1}</div>
+                    <h4 style={{ fontSize: 18, fontWeight: 700, margin: "0 0 10px", letterSpacing: "-0.01em" }}>{c.t}</h4>
+                    <p style={{ fontSize: 13, color: "#a8b8c8", margin: 0, lineHeight: 1.6 }}>{c.d}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+
+        {view === "timeline" && (
+          <section>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, fontWeight: 700 }}>PORTFOLIO IN TIME</div>
+              <h2 style={{ fontSize: 28, fontWeight: 700, margin: "4px 0 8px", letterSpacing: "-0.02em" }}>Initiative Timeline</h2>
+              <p style={{ fontSize: 14, color: T.subdued, maxWidth: 720, lineHeight: 1.5, margin: 0 }}>
+                Every initiative laid against the calendar. The amber line marks today.
+              </p>
+            </div>
+
+            <TimelineSummary data={matrixData} />
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, gap: 24, flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                <span style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, fontWeight: 700, marginRight: 8 }}>GROUP BY</span>
+                {[{v:"lead",l:"Workstream"},{v:"quadrant",l:"Quadrant"}].map((g) => (
+                  <button key={g.v} onClick={() => setTlGroupBy(g.v)} style={{
+                    background: tlGroupBy === g.v ? T.ink : T.bgElev,
+                    color: tlGroupBy === g.v ? T.bg : T.inkSoft,
+                    border: `1px solid ${tlGroupBy === g.v ? T.ink : T.rule}`,
+                    padding: "5px 14px", fontSize: 11, fontWeight: 600, cursor: "pointer", borderRadius: 2,
+                  }}>{g.l}</button>
+                ))}
+              </div>
+              <div style={{ display: "flex", gap: 16, fontSize: 10, color: T.subdued, fontWeight: 600, letterSpacing: 1, flexWrap: "wrap" }}>
+                <span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{width:14,height:8,background:T.ink}}></span>CORE BETS</span>
+                <span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{width:14,height:8,background:T.red}}></span>QUESTION MARKS</span>
+                <span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{width:14,height:8,background:T.teal}}></span>STEADY STATE</span>
+                <span style={{display:"inline-flex",alignItems:"center",gap:6}}><span style={{width:14,height:8,background:T.muted}}></span>RECONSIDER</span>
+              </div>
+            </div>
+
+            <Timeline data={matrixData} onSelect={setSelected} groupBy={tlGroupBy} />
+
+            <div style={{ marginTop: 16, fontSize: 11, color: T.subdued, lineHeight: 1.6 }}>
+              Bar opacity scales by impact level. Darker shading on the left of in-flight bars = elapsed portion. Right-arrow = finish beyond visible window. <span style={{ color: T.amber, fontWeight: 700 }}>●</span> external dep. Click any bar for full record.
+            </div>
+          </section>
+        )}
+
+        {view === "leads" && (
+          <section>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, fontWeight: 700 }}>WORKLOAD HEATMAP</div>
+              <h2 style={{ fontSize: 28, fontWeight: 700, margin: "4px 0 8px", letterSpacing: "-0.02em" }}>Workstreams by Quadrant</h2>
+              <p style={{ fontSize: 14, color: T.subdued, maxWidth: 720, lineHeight: 1.5, margin: 0 }}>
+                Workload by workstream and quadrant. Heaviest cells show where each lead is leaning hardest.
+              </p>
+            </div>
+            <Heatmap data={matrixData} />
+          </section>
+        )}
+
+        {view === "list" && (
+          <section>
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, fontWeight: 700 }}>FULL REGISTER</div>
+              <h2 style={{ fontSize: 28, fontWeight: 700, margin: "4px 0 8px", letterSpacing: "-0.02em" }}>All Initiatives</h2>
+              <p style={{ fontSize: 14, color: T.subdued, maxWidth: 720, lineHeight: 1.5, margin: 0 }}>Click any row to open the full record.</p>
+            </div>
+
+            <div style={{ background: T.bgElev, border: `1px solid ${T.rule}`, borderRadius: 4, overflow: "hidden" }}>
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "60px 60px 1fr 180px 120px 120px 100px",
+                gap: 16, padding: "14px 20px",
+                fontSize: 9, letterSpacing: 2, color: T.subdued, fontWeight: 700,
+                borderBottom: `1px solid ${T.rule}`, background: T.bgGrid,
+              }}>
+                <div>SA</div>
+                <div>IMP</div>
+                <div>INITIATIVE</div>
+                <div>WORKSTREAM</div>
+                <div>QUADRANT</div>
+                <div>PM</div>
+                <div style={{ textAlign: "right" }}>FINISH</div>
+              </div>
+              {filtered.sort((a, b) => {
+                // Sort by quadrant priority, then by impact desc
+                const qOrder = { "Core Bets": 0, "Question Marks": 1, "Steady State": 2, "Reconsider": 3 };
+                if (qOrder[a.quadrant] !== qOrder[b.quadrant]) return qOrder[a.quadrant] - qOrder[b.quadrant];
+                return b.impact - a.impact;
+              }).map((d, i) => {
+                const meta = QUAD[d.quadrant];
+                return (
+                  <button key={d.id} onClick={() => setSelected(d)} style={{
+                    display: "grid", gridTemplateColumns: "60px 60px 1fr 180px 120px 120px 100px",
+                    gap: 16, padding: "14px 20px", background: "transparent", border: "none",
+                    borderBottom: i < filtered.length - 1 ? `1px solid ${T.rule}` : "none",
+                    textAlign: "left", width: "100%", cursor: "pointer", alignItems: "center",
+                    fontFamily: "var(--f-sans)",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = T.bgGrid)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
+                    <div style={{ fontFamily: "var(--f-mono)", fontSize: 12, fontWeight: 600, color: d.sa >= 4 ? T.ink : T.subdued }}>{d.sa.toFixed(1)}</div>
+                    <div style={{ fontFamily: "var(--f-mono)", fontSize: 12, fontWeight: 600, color: d.impact >= 4 ? T.ink : T.subdued }}>{d.impact.toFixed(1)}</div>
+                    <div style={{ fontSize: 14, color: T.ink, fontWeight: 500 }}>{d.name}</div>
+                    <div style={{ fontSize: 12, color: T.inkSoft }}>{d.lead}</div>
+                    <div style={{ fontSize: 9, letterSpacing: 1.5, color: meta.color, fontWeight: 700 }}>{meta.label.toUpperCase()}</div>
+                    <div style={{ fontFamily: "var(--f-mono)", fontSize: 11, color: d.pm_missing ? T.amberDeep : T.inkSoft, fontWeight: d.pm_missing ? 700 : 500 }}>{d.pm}</div>
+                    <div style={{ fontFamily: "var(--f-mono)", fontSize: 11, color: T.subdued, textAlign: "right" }}>{d.finish || "—"}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
+      </main>
+
+      <footer style={{
+        background: T.bgElev, borderTop: `1px solid ${T.rule}`,
+        padding: "20px 32px",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        fontSize: 11, color: T.subdued,
+      }}>
+        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+          <Logo />
+          <span style={{ fontFamily: "var(--f-mono)" }}>· Portfolio Diagnostic v1.1 ·</span>
+        </div>
+        <div style={{ fontFamily: "var(--f-mono)", fontSize: 10, letterSpacing: 1 }}>
+          PREPARED Q1 FY27  ·  CONFIDENTIAL
+        </div>
+      </footer>
+
+      <Drawer initiative={selected} onClose={() => setSelected(null)} />
+    </div>
+  );
+}
+
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(<App />);
+
+// Hide loader once React has rendered
+requestAnimationFrame(() => {
+  setTimeout(() => {
+    const loader = document.getElementById("loading");
+    if (loader) {
+      loader.classList.add("hidden");
+      setTimeout(() => loader.remove(), 300);
+    }
+  }, 100);
+});
+</script>
+
+</body>
+</html>
