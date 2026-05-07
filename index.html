@@ -4,12 +4,10 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>BigCompany — Portfolio Diagnostic</title>
-<meta name="description" content="Strategic alignment × impact diagnostic for the BigCompany.com initiative portfolio." />
+<meta name="description" content="Strategic alignment × impact diagnostic for the BigCompany.com initiative portfolio. Drop a refreshed inventory file to rebuild the matrix." />
 
-<!-- Favicon -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'%3E%3Crect width='28' height='28' rx='3' fill='%230a1f33'/%3E%3Ctext x='14' y='19' text-anchor='middle' font-size='13' font-weight='800' fill='%23fbf9f4' font-family='system-ui'%3EBC%3C/text%3E%3Crect x='22' y='22' width='4' height='4' fill='%23b45309'/%3E%3C/svg%3E" />
 
-<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" />
@@ -18,56 +16,24 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js" crossorigin></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.24.7/babel.min.js" crossorigin></script>
+<!-- SheetJS for parsing uploaded XLSX files -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin></script>
 
 <style>
   :root {
     --f-sans: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     --f-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
   }
-  html, body {
-    margin: 0;
-    padding: 0;
-    background: #fbf9f4;
-    font-family: var(--f-sans);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
+  html, body { margin: 0; padding: 0; background: #fbf9f4; font-family: var(--f-sans); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
   * { box-sizing: border-box; }
   button { font-family: var(--f-sans); }
-
-  /* Loading state — shown until React hydrates */
-  #loading {
-    position: fixed;
-    inset: 0;
-    background: #fbf9f4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-    z-index: 100;
-    transition: opacity 0.3s ease;
-  }
+  #loading { position: fixed; inset: 0; background: #fbf9f4; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; z-index: 100; transition: opacity 0.3s ease; }
   #loading.hidden { opacity: 0; pointer-events: none; }
-  #loading .dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #b45309;
-    animation: pulse 1.4s ease-in-out infinite;
-  }
-  #loading .label {
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: #64748b;
-    font-weight: 600;
-  }
+  #loading .dot { width: 6px; height: 6px; border-radius: 50%; background: #b45309; animation: pulse 1.4s ease-in-out infinite; }
+  #loading .label { font-size: 10px; letter-spacing: 2px; color: #64748b; font-weight: 600; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideIn {
-    from { transform: translateX(40px); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
+  @keyframes slideIn { from { transform: translateX(40px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
   .pulse { animation: pulse 2s ease-in-out infinite; }
 </style>
 </head>
@@ -81,9 +47,9 @@
 <div id="root"></div>
 
 <script type="text/babel" data-presets="env,react">
-const { useState, useMemo, useEffect } = React;
+const { useState, useMemo, useEffect, useRef } = React;
 
-const DATA = [{"id":0,"name":"Initiative 001","lead":"Workstream G","category":"Commissioning","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 42","pm_missing":false,"external":true,"recoverable":null,"start":"2026-08","finish":"2027-05","duration_months":9.0,"effort_raw":6.99,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A, Workstream C, Workstream F","consultancy_spend":null,"plot_x":2.455,"plot_y":5.162},{"id":1,"name":"Initiative 014","lead":"Workstream A","category":"Data and modelling","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 44","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-07","finish":"2027-03","duration_months":8.0,"effort_raw":4.33,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.584,"plot_y":5.036},{"id":2,"name":"Initiative 015","lead":"Workstream A","category":"Digital","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 44","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-05","finish":"2027-03","duration_months":10.0,"effort_raw":3.96,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":null,"plot_x":2.376,"plot_y":4.876},{"id":3,"name":"Initiative 016","lead":"Workstream A","category":"Digital","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 36","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-02","finish":"2026-09","duration_months":7.0,"effort_raw":5.06,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.341,"plot_y":5.132},{"id":4,"name":"Initiative 017","lead":"External Workstream","category":"Digital","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 01","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-01","finish":"2026-04","duration_months":14.9,"effort_raw":4.79,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function","consultancy_spend":null,"plot_x":2.536,"plot_y":5.075},{"id":5,"name":"Initiative 018","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":5.0,"impact_level":"H","pm":"TBC","pm_missing":true,"external":true,"recoverable":null,"start":"2026-03","finish":"2027-06","duration_months":15.0,"effort_raw":6.5,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream D","consultancy_spend":null,"plot_x":2.327,"plot_y":5.169},{"id":6,"name":"Initiative 019","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 14","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-04","finish":"2026-12","duration_months":8.0,"effort_raw":4.54,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.62,"plot_y":4.896},{"id":7,"name":"Initiative 020","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 05","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-03","finish":"2026-08","duration_months":5.0,"effort_raw":4.74,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.385,"plot_y":4.886},{"id":8,"name":"Initiative 021","lead":"Workstream A","category":"Training","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 43","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":8.33,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.43,"plot_y":2.509},{"id":9,"name":"Initiative 022","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 03","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2025-01","finish":"2026-12","duration_months":23.0,"effort_raw":5.83,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":2.476,"plot_y":2.425},{"id":10,"name":"Initiative 023","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 09","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2023-03","finish":"2026-12","duration_months":45.0,"effort_raw":4.0,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.54,"plot_y":2.37},{"id":11,"name":"Initiative 024","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 36","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-11","finish":"2026-12","duration_months":13.0,"effort_raw":2.76,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.425,"plot_y":2.452},{"id":12,"name":"Initiative 028","lead":"Workstream B","category":"Regulatory","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 26","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2027-03","finish":"2027-12","duration_months":9.0,"effort_raw":5.41,"resource_count":5,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":0.0,"plot_x":2.484,"plot_y":2.603},{"id":13,"name":"Initiative 029","lead":"Workstream B","category":"Regulatory","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 26","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2024-07","finish":"2026-09","duration_months":26.0,"effort_raw":10.2,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":40000.0,"plot_x":2.392,"plot_y":2.505},{"id":14,"name":"Initiative 034","lead":"Workstream B","category":"Training","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 34","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":3.53,"resource_count":1,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":2.533,"plot_y":2.337},{"id":15,"name":"Initiative 037","lead":"Workstream B","category":"Industry Engagement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"TBC","pm_missing":true,"external":false,"recoverable":"Recoverable","start":"2026-03","finish":"2027-06","duration_months":15.0,"effort_raw":2.5,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":2.539,"plot_y":2.381},{"id":16,"name":"Initiative 041","lead":"Workstream F","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 29","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-07","duration_months":16.0,"effort_raw":3.27,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F Workstream F Workstream F","consultancy_spend":null,"plot_x":2.343,"plot_y":2.662},{"id":17,"name":"Initiative 044","lead":"Workstream F","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 30","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-06","duration_months":15.0,"effort_raw":3.1,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F Workstream F Workstream F","consultancy_spend":null,"plot_x":2.668,"plot_y":2.611},{"id":18,"name":"Initiative 045","lead":"External Workstream","category":"Digital","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 37","pm_missing":false,"external":false,"recoverable":null,"start":"2024-12","finish":"2030-06","duration_months":66.0,"effort_raw":7.9,"resource_count":3,"comments":null,"shared_resources":"Digital function, Workstream D","consultancy_spend":null,"plot_x":2.43,"plot_y":2.355},{"id":19,"name":"Initiative 052","lead":"External Workstream","category":"Market Reform","sa":2.5,"impact":1.0,"impact_level":"L","pm":"PM 36","pm_missing":false,"external":true,"recoverable":null,"start":"2026-07","finish":"2027-06","duration_months":11.0,"effort_raw":8.23,"resource_count":3,"comments":null,"shared_resources":"Workstream D","consultancy_spend":null,"plot_x":2.566,"plot_y":0.978},{"id":20,"name":"Initiative 056","lead":"External Workstream","category":"Regulatory","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-03","duration_months":12.0,"effort_raw":2.0,"resource_count":0,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.364,"plot_y":0.998},{"id":21,"name":"Initiative 057","lead":"External Workstream","category":"Infrastructure Program","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-10","duration_months":7.0,"effort_raw":1.17,"resource_count":0,"comments":null,"shared_resources":"Workstream E","consultancy_spend":null,"plot_x":2.332,"plot_y":1.147},{"id":22,"name":"Initiative 064","lead":"Workstream D","category":"Process Improvement","sa":2.5,"impact":1.0,"impact_level":"L","pm":"PM 39","pm_missing":false,"external":false,"recoverable":null,"start":"2026-09","finish":"2027-06","duration_months":9.0,"effort_raw":3.39,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":2.413,"plot_y":1.059},{"id":23,"name":"Initiative 080","lead":"External Workstream","category":"Process Improvement","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2025-11","finish":"2026-12","duration_months":13.0,"effort_raw":3.36,"resource_count":2,"comments":null,"shared_resources":"Workstream C","consultancy_spend":null,"plot_x":2.432,"plot_y":1.007},{"id":24,"name":"Initiative 082","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":1.0,"impact_level":"L","pm":"Employee 012","pm_missing":false,"external":false,"recoverable":null,"start":"2024-05","finish":"2026-09","duration_months":28.0,"effort_raw":4.7,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.517,"plot_y":0.887},{"id":25,"name":"Initiative 084","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2025-09","finish":"2026-12","duration_months":15.0,"effort_raw":4.3,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.669,"plot_y":1.099},{"id":26,"name":"Initiative 087","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2027-01","finish":"2028-07","duration_months":18.0,"effort_raw":4.79,"resource_count":2,"comments":null,"shared_resources":"Operations","consultancy_spend":null,"plot_x":2.658,"plot_y":2.142},{"id":27,"name":"Initiative 088","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2027-06","finish":"2028-07","duration_months":13.0,"effort_raw":2.87,"resource_count":1,"comments":null,"shared_resources":"Operations","consultancy_spend":null,"plot_x":2.535,"plot_y":2.152},{"id":28,"name":"Initiative 089","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"PM 19","pm_missing":false,"external":false,"recoverable":null,"start":"2026-04","finish":"2027-02","duration_months":10.1,"effort_raw":4.08,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":2.352,"plot_y":1.891},{"id":29,"name":"Initiative 090","lead":"Workstream E","category":"Process Improvement","sa":2.5,"impact":2.0,"impact_level":"L","pm":"Employee 022","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-12","duration_months":11.0,"effort_raw":3.83,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C, Workstream D","consultancy_spend":null,"plot_x":2.336,"plot_y":1.937},{"id":30,"name":"Initiative 093","lead":"Workstream C","category":"Regulatory","sa":2.5,"impact":2.0,"impact_level":"L","pm":"PM 26","pm_missing":false,"external":true,"recoverable":null,"start":"2025-08","finish":"2027-02","duration_months":18.0,"effort_raw":10.01,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.46,"plot_y":1.918},{"id":31,"name":"Initiative 095","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-03","duration_months":12.0,"effort_raw":2.9,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"AI Data and Governance","consultancy_spend":null,"plot_x":2.618,"plot_y":1.948},{"id":32,"name":"Initiative 096","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":4.0,"impact_level":"H","pm":"PM 28","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-04","duration_months":3.0,"effort_raw":0.49,"resource_count":0,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":2.421,"plot_y":4.015},{"id":33,"name":"Initiative 026","lead":"Workstream B","category":"Industry Engagement","sa":4.0,"impact":5.0,"impact_level":"H","pm":"TBC","pm_missing":true,"external":true,"recoverable":"Recoverable","start":"2026-09","finish":"2027-12","duration_months":15.0,"effort_raw":8.2,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C, Workstream F","consultancy_spend":780000.0,"plot_x":3.871,"plot_y":5.109},{"id":34,"name":"Initiative 027","lead":"Workstream B","category":"Industry Engagement","sa":4.0,"impact":4.0,"impact_level":"H","pm":"Employee 004","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":5.83,"resource_count":2,"comments":null,"shared_resources":"Workstream C, Workstream F","consultancy_spend":0.0,"plot_x":3.847,"plot_y":4.175},{"id":35,"name":"Initiative 030","lead":"Workstream B","category":"Regulatory","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 26","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-03","finish":"2027-03","duration_months":12.0,"effort_raw":3.5,"resource_count":1,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":4.098,"plot_y":3.892},{"id":36,"name":"Initiative 032","lead":"Workstream B","category":"Training","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 34","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-07","finish":"2026-12","duration_months":5.0,"effort_raw":2.44,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":3.822,"plot_y":4.114},{"id":37,"name":"Initiative 033","lead":"Workstream B","category":"Training","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 34","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-06","finish":"2027-03","duration_months":9.0,"effort_raw":2.39,"resource_count":1,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":4.074,"plot_y":4.082},{"id":38,"name":"Initiative 036","lead":"Workstream B","category":"Process Improvement","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 34","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-07","finish":"2027-06","duration_months":11.0,"effort_raw":1.83,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"All of Workstream","consultancy_spend":null,"plot_x":4.098,"plot_y":3.847},{"id":39,"name":"Initiative 038","lead":"Workstream B","category":"Regulatory","sa":4.0,"impact":5.0,"impact_level":"H","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-12","duration_months":9.0,"effort_raw":1.51,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":3.949,"plot_y":4.862},{"id":40,"name":"Initiative 042","lead":"Workstream F","category":"Training","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 13","pm_missing":false,"external":false,"recoverable":null,"start":"2024-03","finish":"2027-06","duration_months":39.0,"effort_raw":8.4,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.131,"plot_y":2.044},{"id":41,"name":"Initiative 071","lead":"Workstream D","category":"Regulatory","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 17","pm_missing":false,"external":false,"recoverable":null,"start":"2027-07","finish":"2028-06","duration_months":11.0,"effort_raw":1.84,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Enable and Legal","consultancy_spend":null,"plot_x":3.939,"plot_y":1.843},{"id":42,"name":"Initiative 081","lead":"Workstream C","category":"Data and modelling","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 004","pm_missing":false,"external":false,"recoverable":null,"start":"2025-11","finish":"2026-12","duration_months":13.0,"effort_raw":3.66,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":3.932,"plot_y":1.937},{"id":43,"name":"Initiative 083","lead":"Workstream C","category":"Data and modelling","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 060","pm_missing":false,"external":true,"recoverable":null,"start":"2026-05","finish":"2027-09","duration_months":15.9,"effort_raw":5.96,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.083,"plot_y":2.05},{"id":44,"name":"Initiative 094","lead":"Workstream C","category":"Regulatory","sa":4.0,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2026-04","finish":"2026-09","duration_months":5.0,"effort_raw":2.44,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream G","consultancy_spend":null,"plot_x":4.139,"plot_y":1.99},{"id":45,"name":"Initiative 002","lead":"Workstream G","category":"Commissioning","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 42","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-07","duration_months":4.0,"effort_raw":2.27,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":3.863,"plot_y":2.077},{"id":46,"name":"Initiative 003","lead":"Workstream G","category":"Commissioning","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 022","pm_missing":false,"external":true,"recoverable":null,"start":"2025-12","finish":"2026-06","duration_months":6.0,"effort_raw":9.4,"resource_count":5,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.094,"plot_y":2.022},{"id":47,"name":"Initiative 004","lead":"Workstream G","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 42","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-12","duration_months":11.0,"effort_raw":1.83,"resource_count":0,"comments":null,"shared_resources":"Workstream A","consultancy_spend":null,"plot_x":4.098,"plot_y":1.998},{"id":48,"name":"Initiative 005","lead":"Workstream G","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 42","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-12","duration_months":11.0,"effort_raw":1.83,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":4.008,"plot_y":1.974},{"id":49,"name":"Initiative 006","lead":"Workstream A","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 44","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2025-02","finish":"2027-03","duration_months":24.9,"effort_raw":11.0,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function, Workstream C","consultancy_spend":null,"plot_x":3.829,"plot_y":1.859},{"id":50,"name":"Initiative 007","lead":"Workstream A","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 44","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2025-02","finish":"2026-06","duration_months":15.9,"effort_raw":9.26,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function","consultancy_spend":null,"plot_x":3.831,"plot_y":2.049},{"id":51,"name":"Initiative 008","lead":"Workstream A","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 23","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2024","finish":"2026-06","duration_months":null,"effort_raw":3.7,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream D, Workstream group","consultancy_spend":null,"plot_x":3.933,"plot_y":2.003},{"id":52,"name":"Initiative 009","lead":"Workstream A","category":"Government","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 35","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-01","finish":"2027-03","duration_months":25.9,"effort_raw":9.9,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.147,"plot_y":1.91},{"id":53,"name":"Initiative 010","lead":"Workstream A","category":"Government","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 35","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2024-06","finish":"2026-06","duration_months":24.0,"effort_raw":9.9,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":3.968,"plot_y":2.092},{"id":54,"name":"Initiative 011","lead":"Workstream A","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 15","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-12","finish":"2026-06","duration_months":6.0,"effort_raw":4.4,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":3.902,"plot_y":1.848},{"id":55,"name":"Initiative 012","lead":"Workstream A","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 36","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-06","finish":"2026-12","duration_months":6.0,"effort_raw":4.8,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":3.924,"plot_y":1.878},{"id":56,"name":"Initiative 013","lead":"Workstream A","category":"Process Improvement","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 32","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":2.73,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream D","consultancy_spend":null,"plot_x":4.155,"plot_y":3.111},{"id":57,"name":"Initiative 025","lead":"Workstream B","category":"Industry Engagement","sa":4.0,"impact":3.0,"impact_level":"M","pm":"Employee 004","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2025-09","finish":"2026-03","duration_months":5.9,"effort_raw":5.89,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":0.0,"plot_x":4.048,"plot_y":3.134},{"id":58,"name":"Initiative 031","lead":"Workstream B","category":"Regulatory","sa":4.0,"impact":3.0,"impact_level":"M","pm":"Employee 036","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2024-04","finish":"2026-06","duration_months":26.0,"effort_raw":11.4,"resource_count":5,"comments":null,"shared_resources":"Workstream C","consultancy_spend":0.0,"plot_x":4.109,"plot_y":2.887},{"id":59,"name":"Initiative 035","lead":"Workstream B","category":"Process Improvement","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 21","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-11","finish":"2026-06","duration_months":7.0,"effort_raw":1.16,"resource_count":0,"comments":null,"shared_resources":"All of Workstream","consultancy_spend":null,"plot_x":4.141,"plot_y":3.014},{"id":60,"name":"Initiative 039","lead":"Workstream F","category":"Data and modelling","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 04","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-01","finish":"2027-09","duration_months":20.0,"effort_raw":6.23,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":4.111,"plot_y":3.143},{"id":61,"name":"Initiative 040","lead":"Workstream F","category":"Government","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 30","pm_missing":false,"external":false,"recoverable":null,"start":"2026-07","finish":"2027-03","duration_months":8.0,"effort_raw":1.93,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":3.934,"plot_y":2.86},{"id":62,"name":"Initiative 043","lead":"Workstream F","category":"Uncategorised","sa":4.0,"impact":3.0,"impact_level":"M","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2025-12","finish":"2027-12","duration_months":24.0,"effort_raw":4.0,"resource_count":0,"comments":null,"shared_resources":"Workstream F Workstream F Workstream F","consultancy_spend":null,"plot_x":3.902,"plot_y":2.974},{"id":63,"name":"Initiative 046","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 08","pm_missing":false,"external":false,"recoverable":null,"start":"2024-06","finish":"2026-08","duration_months":26.0,"effort_raw":6.2,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.114,"plot_y":3.13},{"id":64,"name":"Initiative 047","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":5.0,"impact_level":"H","pm":"PM 06","pm_missing":false,"external":false,"recoverable":null,"start":"2024-05","finish":"2027-05","duration_months":36.0,"effort_raw":7.84,"resource_count":3,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.823,"plot_y":5.004},{"id":65,"name":"Initiative 048","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":5.0,"impact_level":"H","pm":"PM 33","pm_missing":false,"external":false,"recoverable":null,"start":"2025-06","finish":"2026-12","duration_months":18.0,"effort_raw":5.2,"resource_count":2,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.97,"plot_y":4.9},{"id":66,"name":"Initiative 049","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":5.0,"impact_level":"H","pm":"PM 25","pm_missing":false,"external":false,"recoverable":null,"start":"2024-02","finish":"2026-07","duration_months":28.9,"effort_raw":5.0,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.863,"plot_y":4.942},{"id":67,"name":"Initiative 050","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2025-09","finish":"2027-12","duration_months":27.0,"effort_raw":5.12,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.159,"plot_y":0.936},{"id":68,"name":"Initiative 051","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"PM 20","pm_missing":false,"external":false,"recoverable":null,"start":"2024-09","finish":"2027-03","duration_months":29.9,"effort_raw":5.5,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.007,"plot_y":1.073},{"id":69,"name":"Initiative 053","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"PM 16","pm_missing":false,"external":false,"recoverable":null,"start":"2026-06","finish":"2027-07","duration_months":13.0,"effort_raw":6.26,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.951,"plot_y":1.17},{"id":70,"name":"Initiative 054","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"PM 16","pm_missing":false,"external":false,"recoverable":null,"start":"2026-06","finish":"2027-07","duration_months":13.0,"effort_raw":6.26,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.166,"plot_y":0.911},{"id":71,"name":"Initiative 055","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":null,"finish":null,"duration_months":null,"effort_raw":0.0,"resource_count":0,"comments":null,"shared_resources":"Workstream D","consultancy_spend":null,"plot_x":3.999,"plot_y":0.928},{"id":72,"name":"Initiative 058","lead":"External Workstream","category":"Infrastructure Program","sa":4.0,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":"Non Recoverable","start":"2025-11","finish":"2026-09","duration_months":10.0,"effort_raw":2.26,"resource_count":0,"comments":null,"shared_resources":"Workstream E","consultancy_spend":null,"plot_x":3.923,"plot_y":1.833},{"id":73,"name":"Initiative 059","lead":"External Workstream","category":"Government","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 41","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-02","finish":"2026-05","duration_months":2.9,"effort_raw":2.49,"resource_count":0,"comments":null,"shared_resources":"Workstream B Workstream D Workstream C","consultancy_spend":null,"plot_x":4.039,"plot_y":2.001},{"id":74,"name":"Initiative 060","lead":"Workstream D","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 31","pm_missing":false,"external":false,"recoverable":null,"start":"2024-12","finish":"2026-08","duration_months":20.0,"effort_raw":6.43,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function, Workstream A","consultancy_spend":null,"plot_x":3.839,"plot_y":1.92},{"id":75,"name":"Initiative 061","lead":"Workstream D","category":"Market Reform","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 31","pm_missing":false,"external":false,"recoverable":null,"start":"2025-09","finish":"2026-06","duration_months":9.0,"effort_raw":6.39,"resource_count":5,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function, Workstream A","consultancy_spend":null,"plot_x":4.147,"plot_y":1.906},{"id":76,"name":"Initiative 062","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 40","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2027-03","duration_months":13.9,"effort_raw":3.52,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function","consultancy_spend":null,"plot_x":3.872,"plot_y":1.996},{"id":77,"name":"Initiative 063","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 041","pm_missing":false,"external":false,"recoverable":null,"start":"2026-07","finish":"2027-12","duration_months":17.0,"effort_raw":3.84,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.175,"plot_y":1.907},{"id":78,"name":"Initiative 065","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 018","pm_missing":false,"external":false,"recoverable":null,"start":"2026-02","finish":"2027-07","duration_months":16.9,"effort_raw":6.22,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.062,"plot_y":2.094},{"id":79,"name":"Initiative 066","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 030","pm_missing":false,"external":false,"recoverable":null,"start":"2026-02","finish":"2026-07","duration_months":4.9,"effort_raw":4.62,"resource_count":4,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":3.906,"plot_y":2.082},{"id":80,"name":"Initiative 067","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 10","pm_missing":false,"external":false,"recoverable":null,"start":"2026-02","finish":"2027-06","duration_months":15.9,"effort_raw":5.06,"resource_count":3,"comments":null,"shared_resources":"Workstream A","consultancy_spend":null,"plot_x":3.952,"plot_y":2.048},{"id":81,"name":"Initiative 068","lead":"Workstream D","category":"Process Improvement","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 40","pm_missing":false,"external":true,"recoverable":null,"start":"2026-02","finish":"2027-06","duration_months":15.9,"effort_raw":6.56,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.048,"plot_y":2.013},{"id":82,"name":"Initiative 069","lead":"Workstream D","category":"Process Improvement","sa":5.0,"impact":2.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":true,"recoverable":null,"start":"2026-07","finish":"2027-06","duration_months":11.0,"effort_raw":3.83,"resource_count":0,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":4.853,"plot_y":2.121},{"id":83,"name":"Initiative 070","lead":"Workstream D","category":"Regulatory","sa":5.0,"impact":2.0,"impact_level":"L","pm":"Employee 022","pm_missing":false,"external":false,"recoverable":null,"start":"2025-07","finish":"2026-12","duration_months":17.0,"effort_raw":8.44,"resource_count":4,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.935,"plot_y":1.887},{"id":84,"name":"Initiative 072","lead":"Workstream D","category":"Training","sa":5.0,"impact":2.0,"impact_level":"L","pm":"Employee 041","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-08","duration_months":5.0,"effort_raw":3.24,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.835,"plot_y":2.033},{"id":85,"name":"Initiative 073","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2025-10","finish":"2026-04","duration_months":6.0,"effort_raw":3.4,"resource_count":3,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.064,"plot_y":1.826},{"id":86,"name":"Initiative 074","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-12","finish":"2026-04","duration_months":4.0,"effort_raw":2.16,"resource_count":3,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.004,"plot_y":1.902},{"id":87,"name":"Initiative 075","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-06","finish":"2027-04","duration_months":10.0,"effort_raw":4.26,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.052,"plot_y":1.883},{"id":88,"name":"Initiative 076","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2026-03","finish":"2027-01","duration_months":10.1,"effort_raw":6.28,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.069,"plot_y":1.959},{"id":89,"name":"Initiative 077","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-04","finish":"2026-12","duration_months":8.0,"effort_raw":5.34,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.157,"plot_y":1.87},{"id":90,"name":"Initiative 078","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":2.83,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":4.943,"plot_y":1.861},{"id":91,"name":"Initiative 079","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-04","finish":"2026-08","duration_months":4.0,"effort_raw":4.17,"resource_count":3,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.153,"plot_y":2.136},{"id":92,"name":"Initiative 085","lead":"Workstream C","category":"Data and modelling","sa":5.0,"impact":5.0,"impact_level":"H","pm":"Employee 060","pm_missing":false,"external":false,"recoverable":null,"start":"2026-05","finish":"2027-09","duration_months":15.9,"effort_raw":4.26,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.913,"plot_y":5.058},{"id":93,"name":"Initiative 086","lead":"Workstream C","category":"Data and modelling","sa":5.0,"impact":5.0,"impact_level":"H","pm":"Employee 060","pm_missing":false,"external":true,"recoverable":null,"start":"2024-06","finish":"2026-06","duration_months":24.0,"effort_raw":11.5,"resource_count":5,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":5.114,"plot_y":5.02},{"id":94,"name":"Initiative 091","lead":"Workstream C","category":"Regulatory","sa":5.0,"impact":5.0,"impact_level":"H","pm":"PM 26","pm_missing":false,"external":false,"recoverable":null,"start":"2025-10","finish":"2026-07","duration_months":9.0,"effort_raw":5.39,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":5.011,"plot_y":4.907},{"id":95,"name":"Initiative 092","lead":"Workstream C","category":"Regulatory","sa":5.0,"impact":5.0,"impact_level":"H","pm":"Employee 060","pm_missing":false,"external":false,"recoverable":null,"start":"2025-09","finish":"2027-02","duration_months":17.0,"effort_raw":8.34,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.854,"plot_y":5.143}];
+const INITIAL_DATA = [{"id":0,"name":"Initiative 001","lead":"Workstream G","category":"Commissioning","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 42","pm_missing":false,"external":true,"recoverable":null,"start":"2026-08","finish":"2027-05","duration_months":9.0,"effort_raw":6.99,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A, Workstream C, Workstream F","consultancy_spend":null,"plot_x":2.455,"plot_y":5.162},{"id":1,"name":"Initiative 014","lead":"Workstream A","category":"Data and modelling","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 44","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-07","finish":"2027-03","duration_months":8.0,"effort_raw":4.33,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.584,"plot_y":5.036},{"id":2,"name":"Initiative 015","lead":"Workstream A","category":"Digital","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 44","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-05","finish":"2027-03","duration_months":10.0,"effort_raw":3.96,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":null,"plot_x":2.376,"plot_y":4.876},{"id":3,"name":"Initiative 016","lead":"Workstream A","category":"Digital","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 36","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-02","finish":"2026-09","duration_months":7.0,"effort_raw":5.06,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.341,"plot_y":5.132},{"id":4,"name":"Initiative 017","lead":"External Workstream","category":"Digital","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 01","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-01","finish":"2026-04","duration_months":14.9,"effort_raw":4.79,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function","consultancy_spend":null,"plot_x":2.536,"plot_y":5.075},{"id":5,"name":"Initiative 018","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":5.0,"impact_level":"H","pm":"TBC","pm_missing":true,"external":true,"recoverable":null,"start":"2026-03","finish":"2027-06","duration_months":15.0,"effort_raw":6.5,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream D","consultancy_spend":null,"plot_x":2.327,"plot_y":5.169},{"id":6,"name":"Initiative 019","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 14","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-04","finish":"2026-12","duration_months":8.0,"effort_raw":4.54,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.62,"plot_y":4.896},{"id":7,"name":"Initiative 020","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":5.0,"impact_level":"H","pm":"PM 05","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-03","finish":"2026-08","duration_months":5.0,"effort_raw":4.74,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.385,"plot_y":4.886},{"id":8,"name":"Initiative 021","lead":"Workstream A","category":"Training","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 43","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":8.33,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.43,"plot_y":2.509},{"id":9,"name":"Initiative 022","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 03","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2025-01","finish":"2026-12","duration_months":23.0,"effort_raw":5.83,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":2.476,"plot_y":2.425},{"id":10,"name":"Initiative 023","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 09","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2023-03","finish":"2026-12","duration_months":45.0,"effort_raw":4.0,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.54,"plot_y":2.37},{"id":11,"name":"Initiative 024","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 36","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-11","finish":"2026-12","duration_months":13.0,"effort_raw":2.76,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.425,"plot_y":2.452},{"id":12,"name":"Initiative 028","lead":"Workstream B","category":"Regulatory","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 26","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2027-03","finish":"2027-12","duration_months":9.0,"effort_raw":5.41,"resource_count":5,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":0.0,"plot_x":2.484,"plot_y":2.603},{"id":13,"name":"Initiative 029","lead":"Workstream B","category":"Regulatory","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 26","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2024-07","finish":"2026-09","duration_months":26.0,"effort_raw":10.2,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":40000.0,"plot_x":2.392,"plot_y":2.505},{"id":14,"name":"Initiative 034","lead":"Workstream B","category":"Training","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 34","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":3.53,"resource_count":1,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":2.533,"plot_y":2.337},{"id":15,"name":"Initiative 037","lead":"Workstream B","category":"Industry Engagement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"TBC","pm_missing":true,"external":false,"recoverable":"Recoverable","start":"2026-03","finish":"2027-06","duration_months":15.0,"effort_raw":2.5,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":2.539,"plot_y":2.381},{"id":16,"name":"Initiative 041","lead":"Workstream F","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 29","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-07","duration_months":16.0,"effort_raw":3.27,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F Workstream F Workstream F","consultancy_spend":null,"plot_x":2.343,"plot_y":2.662},{"id":17,"name":"Initiative 044","lead":"Workstream F","category":"Process Improvement","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 30","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-06","duration_months":15.0,"effort_raw":3.1,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F Workstream F Workstream F","consultancy_spend":null,"plot_x":2.668,"plot_y":2.611},{"id":18,"name":"Initiative 045","lead":"External Workstream","category":"Digital","sa":2.5,"impact":2.5,"impact_level":"M","pm":"PM 37","pm_missing":false,"external":false,"recoverable":null,"start":"2024-12","finish":"2030-06","duration_months":66.0,"effort_raw":7.9,"resource_count":3,"comments":null,"shared_resources":"Digital function, Workstream D","consultancy_spend":null,"plot_x":2.43,"plot_y":2.355},{"id":19,"name":"Initiative 052","lead":"External Workstream","category":"Market Reform","sa":2.5,"impact":1.0,"impact_level":"L","pm":"PM 36","pm_missing":false,"external":true,"recoverable":null,"start":"2026-07","finish":"2027-06","duration_months":11.0,"effort_raw":8.23,"resource_count":3,"comments":null,"shared_resources":"Workstream D","consultancy_spend":null,"plot_x":2.566,"plot_y":0.978},{"id":20,"name":"Initiative 056","lead":"External Workstream","category":"Regulatory","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-03","duration_months":12.0,"effort_raw":2.0,"resource_count":0,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.364,"plot_y":0.998},{"id":21,"name":"Initiative 057","lead":"External Workstream","category":"Infrastructure Program","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-10","duration_months":7.0,"effort_raw":1.17,"resource_count":0,"comments":null,"shared_resources":"Workstream E","consultancy_spend":null,"plot_x":2.332,"plot_y":1.147},{"id":22,"name":"Initiative 064","lead":"Workstream D","category":"Process Improvement","sa":2.5,"impact":1.0,"impact_level":"L","pm":"PM 39","pm_missing":false,"external":false,"recoverable":null,"start":"2026-09","finish":"2027-06","duration_months":9.0,"effort_raw":3.39,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":2.413,"plot_y":1.059},{"id":23,"name":"Initiative 080","lead":"External Workstream","category":"Process Improvement","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2025-11","finish":"2026-12","duration_months":13.0,"effort_raw":3.36,"resource_count":2,"comments":null,"shared_resources":"Workstream C","consultancy_spend":null,"plot_x":2.432,"plot_y":1.007},{"id":24,"name":"Initiative 082","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":1.0,"impact_level":"L","pm":"Employee 012","pm_missing":false,"external":false,"recoverable":null,"start":"2024-05","finish":"2026-09","duration_months":28.0,"effort_raw":4.7,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.517,"plot_y":0.887},{"id":25,"name":"Initiative 084","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":1.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2025-09","finish":"2026-12","duration_months":15.0,"effort_raw":4.3,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":2.669,"plot_y":1.099},{"id":26,"name":"Initiative 087","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2027-01","finish":"2028-07","duration_months":18.0,"effort_raw":4.79,"resource_count":2,"comments":null,"shared_resources":"Operations","consultancy_spend":null,"plot_x":2.658,"plot_y":2.142},{"id":27,"name":"Initiative 088","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2027-06","finish":"2028-07","duration_months":13.0,"effort_raw":2.87,"resource_count":1,"comments":null,"shared_resources":"Operations","consultancy_spend":null,"plot_x":2.535,"plot_y":2.152},{"id":28,"name":"Initiative 089","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"PM 19","pm_missing":false,"external":false,"recoverable":null,"start":"2026-04","finish":"2027-02","duration_months":10.1,"effort_raw":4.08,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":2.352,"plot_y":1.891},{"id":29,"name":"Initiative 090","lead":"Workstream E","category":"Process Improvement","sa":2.5,"impact":2.0,"impact_level":"L","pm":"Employee 022","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-12","duration_months":11.0,"effort_raw":3.83,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C, Workstream D","consultancy_spend":null,"plot_x":2.336,"plot_y":1.937},{"id":30,"name":"Initiative 093","lead":"Workstream C","category":"Regulatory","sa":2.5,"impact":2.0,"impact_level":"L","pm":"PM 26","pm_missing":false,"external":true,"recoverable":null,"start":"2025-08","finish":"2027-02","duration_months":18.0,"effort_raw":10.01,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":2.46,"plot_y":1.918},{"id":31,"name":"Initiative 095","lead":"Workstream C","category":"Data and modelling","sa":2.5,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2027-03","duration_months":12.0,"effort_raw":2.9,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"AI Data and Governance","consultancy_spend":null,"plot_x":2.618,"plot_y":1.948},{"id":32,"name":"Initiative 096","lead":"Workstream A","category":"Process Improvement","sa":2.5,"impact":4.0,"impact_level":"H","pm":"PM 28","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-04","duration_months":3.0,"effort_raw":0.49,"resource_count":0,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":2.421,"plot_y":4.015},{"id":33,"name":"Initiative 026","lead":"Workstream B","category":"Industry Engagement","sa":4.0,"impact":5.0,"impact_level":"H","pm":"TBC","pm_missing":true,"external":true,"recoverable":"Recoverable","start":"2026-09","finish":"2027-12","duration_months":15.0,"effort_raw":8.2,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C, Workstream F","consultancy_spend":780000.0,"plot_x":3.871,"plot_y":5.109},{"id":34,"name":"Initiative 027","lead":"Workstream B","category":"Industry Engagement","sa":4.0,"impact":4.0,"impact_level":"H","pm":"Employee 004","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":5.83,"resource_count":2,"comments":null,"shared_resources":"Workstream C, Workstream F","consultancy_spend":0.0,"plot_x":3.847,"plot_y":4.175},{"id":35,"name":"Initiative 030","lead":"Workstream B","category":"Regulatory","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 26","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-03","finish":"2027-03","duration_months":12.0,"effort_raw":3.5,"resource_count":1,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":4.098,"plot_y":3.892},{"id":36,"name":"Initiative 032","lead":"Workstream B","category":"Training","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 34","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-07","finish":"2026-12","duration_months":5.0,"effort_raw":2.44,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":3.822,"plot_y":4.114},{"id":37,"name":"Initiative 033","lead":"Workstream B","category":"Training","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 34","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-06","finish":"2027-03","duration_months":9.0,"effort_raw":2.39,"resource_count":1,"comments":null,"shared_resources":null,"consultancy_spend":0.0,"plot_x":4.074,"plot_y":4.082},{"id":38,"name":"Initiative 036","lead":"Workstream B","category":"Process Improvement","sa":4.0,"impact":4.0,"impact_level":"H","pm":"PM 34","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-07","finish":"2027-06","duration_months":11.0,"effort_raw":1.83,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"All of Workstream","consultancy_spend":null,"plot_x":4.098,"plot_y":3.847},{"id":39,"name":"Initiative 038","lead":"Workstream B","category":"Regulatory","sa":4.0,"impact":5.0,"impact_level":"H","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-12","duration_months":9.0,"effort_raw":1.51,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":3.949,"plot_y":4.862},{"id":40,"name":"Initiative 042","lead":"Workstream F","category":"Training","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 13","pm_missing":false,"external":false,"recoverable":null,"start":"2024-03","finish":"2027-06","duration_months":39.0,"effort_raw":8.4,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.131,"plot_y":2.044},{"id":41,"name":"Initiative 071","lead":"Workstream D","category":"Regulatory","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 17","pm_missing":false,"external":false,"recoverable":null,"start":"2027-07","finish":"2028-06","duration_months":11.0,"effort_raw":1.84,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Enable and Legal","consultancy_spend":null,"plot_x":3.939,"plot_y":1.843},{"id":42,"name":"Initiative 081","lead":"Workstream C","category":"Data and modelling","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 004","pm_missing":false,"external":false,"recoverable":null,"start":"2025-11","finish":"2026-12","duration_months":13.0,"effort_raw":3.66,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":3.932,"plot_y":1.937},{"id":43,"name":"Initiative 083","lead":"Workstream C","category":"Data and modelling","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 060","pm_missing":false,"external":true,"recoverable":null,"start":"2026-05","finish":"2027-09","duration_months":15.9,"effort_raw":5.96,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.083,"plot_y":2.05},{"id":44,"name":"Initiative 094","lead":"Workstream C","category":"Regulatory","sa":4.0,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":null,"start":"2026-04","finish":"2026-09","duration_months":5.0,"effort_raw":2.44,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream G","consultancy_spend":null,"plot_x":4.139,"plot_y":1.99},{"id":45,"name":"Initiative 002","lead":"Workstream G","category":"Commissioning","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 42","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-07","duration_months":4.0,"effort_raw":2.27,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":3.863,"plot_y":2.077},{"id":46,"name":"Initiative 003","lead":"Workstream G","category":"Commissioning","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 022","pm_missing":false,"external":true,"recoverable":null,"start":"2025-12","finish":"2026-06","duration_months":6.0,"effort_raw":9.4,"resource_count":5,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.094,"plot_y":2.022},{"id":47,"name":"Initiative 004","lead":"Workstream G","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 42","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-12","duration_months":11.0,"effort_raw":1.83,"resource_count":0,"comments":null,"shared_resources":"Workstream A","consultancy_spend":null,"plot_x":4.098,"plot_y":1.998},{"id":48,"name":"Initiative 005","lead":"Workstream G","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 42","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2026-12","duration_months":11.0,"effort_raw":1.83,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream A","consultancy_spend":null,"plot_x":4.008,"plot_y":1.974},{"id":49,"name":"Initiative 006","lead":"Workstream A","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 44","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2025-02","finish":"2027-03","duration_months":24.9,"effort_raw":11.0,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function, Workstream C","consultancy_spend":null,"plot_x":3.829,"plot_y":1.859},{"id":50,"name":"Initiative 007","lead":"Workstream A","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 44","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2025-02","finish":"2026-06","duration_months":15.9,"effort_raw":9.26,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function","consultancy_spend":null,"plot_x":3.831,"plot_y":2.049},{"id":51,"name":"Initiative 008","lead":"Workstream A","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 23","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2024","finish":"2026-06","duration_months":null,"effort_raw":3.7,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream D, Workstream group","consultancy_spend":null,"plot_x":3.933,"plot_y":2.003},{"id":52,"name":"Initiative 009","lead":"Workstream A","category":"Government","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 35","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-01","finish":"2027-03","duration_months":25.9,"effort_raw":9.9,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.147,"plot_y":1.91},{"id":53,"name":"Initiative 010","lead":"Workstream A","category":"Government","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 35","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2024-06","finish":"2026-06","duration_months":24.0,"effort_raw":9.9,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":3.968,"plot_y":2.092},{"id":54,"name":"Initiative 011","lead":"Workstream A","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 15","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-12","finish":"2026-06","duration_months":6.0,"effort_raw":4.4,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":3.902,"plot_y":1.848},{"id":55,"name":"Initiative 012","lead":"Workstream A","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 36","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-06","finish":"2026-12","duration_months":6.0,"effort_raw":4.8,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":3.924,"plot_y":1.878},{"id":56,"name":"Initiative 013","lead":"Workstream A","category":"Process Improvement","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 32","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":2.73,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream D","consultancy_spend":null,"plot_x":4.155,"plot_y":3.111},{"id":57,"name":"Initiative 025","lead":"Workstream B","category":"Industry Engagement","sa":4.0,"impact":3.0,"impact_level":"M","pm":"Employee 004","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2025-09","finish":"2026-03","duration_months":5.9,"effort_raw":5.89,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream C","consultancy_spend":0.0,"plot_x":4.048,"plot_y":3.134},{"id":58,"name":"Initiative 031","lead":"Workstream B","category":"Regulatory","sa":4.0,"impact":3.0,"impact_level":"M","pm":"Employee 036","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2024-04","finish":"2026-06","duration_months":26.0,"effort_raw":11.4,"resource_count":5,"comments":null,"shared_resources":"Workstream C","consultancy_spend":0.0,"plot_x":4.109,"plot_y":2.887},{"id":59,"name":"Initiative 035","lead":"Workstream B","category":"Process Improvement","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 21","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-11","finish":"2026-06","duration_months":7.0,"effort_raw":1.16,"resource_count":0,"comments":null,"shared_resources":"All of Workstream","consultancy_spend":null,"plot_x":4.141,"plot_y":3.014},{"id":60,"name":"Initiative 039","lead":"Workstream F","category":"Data and modelling","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 04","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-01","finish":"2027-09","duration_months":20.0,"effort_raw":6.23,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":4.111,"plot_y":3.143},{"id":61,"name":"Initiative 040","lead":"Workstream F","category":"Government","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 30","pm_missing":false,"external":false,"recoverable":null,"start":"2026-07","finish":"2027-03","duration_months":8.0,"effort_raw":1.93,"resource_count":0,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream F","consultancy_spend":null,"plot_x":3.934,"plot_y":2.86},{"id":62,"name":"Initiative 043","lead":"Workstream F","category":"Uncategorised","sa":4.0,"impact":3.0,"impact_level":"M","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2025-12","finish":"2027-12","duration_months":24.0,"effort_raw":4.0,"resource_count":0,"comments":null,"shared_resources":"Workstream F Workstream F Workstream F","consultancy_spend":null,"plot_x":3.902,"plot_y":2.974},{"id":63,"name":"Initiative 046","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":3.0,"impact_level":"M","pm":"PM 08","pm_missing":false,"external":false,"recoverable":null,"start":"2024-06","finish":"2026-08","duration_months":26.0,"effort_raw":6.2,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.114,"plot_y":3.13},{"id":64,"name":"Initiative 047","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":5.0,"impact_level":"H","pm":"PM 06","pm_missing":false,"external":false,"recoverable":null,"start":"2024-05","finish":"2027-05","duration_months":36.0,"effort_raw":7.84,"resource_count":3,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.823,"plot_y":5.004},{"id":65,"name":"Initiative 048","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":5.0,"impact_level":"H","pm":"PM 33","pm_missing":false,"external":false,"recoverable":null,"start":"2025-06","finish":"2026-12","duration_months":18.0,"effort_raw":5.2,"resource_count":2,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.97,"plot_y":4.9},{"id":66,"name":"Initiative 049","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":5.0,"impact_level":"H","pm":"PM 25","pm_missing":false,"external":false,"recoverable":null,"start":"2024-02","finish":"2026-07","duration_months":28.9,"effort_raw":5.0,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.863,"plot_y":4.942},{"id":67,"name":"Initiative 050","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":"2025-09","finish":"2027-12","duration_months":27.0,"effort_raw":5.12,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.159,"plot_y":0.936},{"id":68,"name":"Initiative 051","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"PM 20","pm_missing":false,"external":false,"recoverable":null,"start":"2024-09","finish":"2027-03","duration_months":29.9,"effort_raw":5.5,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.007,"plot_y":1.073},{"id":69,"name":"Initiative 053","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"PM 16","pm_missing":false,"external":false,"recoverable":null,"start":"2026-06","finish":"2027-07","duration_months":13.0,"effort_raw":6.26,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":3.951,"plot_y":1.17},{"id":70,"name":"Initiative 054","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"PM 16","pm_missing":false,"external":false,"recoverable":null,"start":"2026-06","finish":"2027-07","duration_months":13.0,"effort_raw":6.26,"resource_count":1,"comments":null,"shared_resources":"Workstream D SME","consultancy_spend":null,"plot_x":4.166,"plot_y":0.911},{"id":71,"name":"Initiative 055","lead":"External Workstream","category":"Market Reform","sa":4.0,"impact":1.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":false,"recoverable":null,"start":null,"finish":null,"duration_months":null,"effort_raw":0.0,"resource_count":0,"comments":null,"shared_resources":"Workstream D","consultancy_spend":null,"plot_x":3.999,"plot_y":0.928},{"id":72,"name":"Initiative 058","lead":"External Workstream","category":"Infrastructure Program","sa":4.0,"impact":2.0,"impact_level":"L","pm":"TBD","pm_missing":true,"external":false,"recoverable":"Non Recoverable","start":"2025-11","finish":"2026-09","duration_months":10.0,"effort_raw":2.26,"resource_count":0,"comments":null,"shared_resources":"Workstream E","consultancy_spend":null,"plot_x":3.923,"plot_y":1.833},{"id":73,"name":"Initiative 059","lead":"External Workstream","category":"Government","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 41","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-02","finish":"2026-05","duration_months":2.9,"effort_raw":2.49,"resource_count":0,"comments":null,"shared_resources":"Workstream B Workstream D Workstream C","consultancy_spend":null,"plot_x":4.039,"plot_y":2.001},{"id":74,"name":"Initiative 060","lead":"Workstream D","category":"Digital","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 31","pm_missing":false,"external":false,"recoverable":null,"start":"2024-12","finish":"2026-08","duration_months":20.0,"effort_raw":6.43,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function, Workstream A","consultancy_spend":null,"plot_x":3.839,"plot_y":1.92},{"id":75,"name":"Initiative 061","lead":"Workstream D","category":"Market Reform","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 31","pm_missing":false,"external":false,"recoverable":null,"start":"2025-09","finish":"2026-06","duration_months":9.0,"effort_raw":6.39,"resource_count":5,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function, Workstream A","consultancy_spend":null,"plot_x":4.147,"plot_y":1.906},{"id":76,"name":"Initiative 062","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 40","pm_missing":false,"external":false,"recoverable":null,"start":"2026-01","finish":"2027-03","duration_months":13.9,"effort_raw":3.52,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Digital function","consultancy_spend":null,"plot_x":3.872,"plot_y":1.996},{"id":77,"name":"Initiative 063","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 041","pm_missing":false,"external":false,"recoverable":null,"start":"2026-07","finish":"2027-12","duration_months":17.0,"effort_raw":3.84,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.175,"plot_y":1.907},{"id":78,"name":"Initiative 065","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 018","pm_missing":false,"external":false,"recoverable":null,"start":"2026-02","finish":"2027-07","duration_months":16.9,"effort_raw":6.22,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.062,"plot_y":2.094},{"id":79,"name":"Initiative 066","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"Employee 030","pm_missing":false,"external":false,"recoverable":null,"start":"2026-02","finish":"2026-07","duration_months":4.9,"effort_raw":4.62,"resource_count":4,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":3.906,"plot_y":2.082},{"id":80,"name":"Initiative 067","lead":"Workstream D","category":"Process Improvement","sa":4.0,"impact":2.0,"impact_level":"L","pm":"PM 10","pm_missing":false,"external":false,"recoverable":null,"start":"2026-02","finish":"2027-06","duration_months":15.9,"effort_raw":5.06,"resource_count":3,"comments":null,"shared_resources":"Workstream A","consultancy_spend":null,"plot_x":3.952,"plot_y":2.048},{"id":81,"name":"Initiative 068","lead":"Workstream D","category":"Process Improvement","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 40","pm_missing":false,"external":true,"recoverable":null,"start":"2026-02","finish":"2027-06","duration_months":15.9,"effort_raw":6.56,"resource_count":2,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.048,"plot_y":2.013},{"id":82,"name":"Initiative 069","lead":"Workstream D","category":"Process Improvement","sa":5.0,"impact":2.0,"impact_level":"L","pm":"TBC","pm_missing":true,"external":true,"recoverable":null,"start":"2026-07","finish":"2027-06","duration_months":11.0,"effort_raw":3.83,"resource_count":0,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":4.853,"plot_y":2.121},{"id":83,"name":"Initiative 070","lead":"Workstream D","category":"Regulatory","sa":5.0,"impact":2.0,"impact_level":"L","pm":"Employee 022","pm_missing":false,"external":false,"recoverable":null,"start":"2025-07","finish":"2026-12","duration_months":17.0,"effort_raw":8.44,"resource_count":4,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.935,"plot_y":1.887},{"id":84,"name":"Initiative 072","lead":"Workstream D","category":"Training","sa":5.0,"impact":2.0,"impact_level":"L","pm":"Employee 041","pm_missing":false,"external":false,"recoverable":null,"start":"2026-03","finish":"2026-08","duration_months":5.0,"effort_raw":3.24,"resource_count":1,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.835,"plot_y":2.033},{"id":85,"name":"Initiative 073","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2025-10","finish":"2026-04","duration_months":6.0,"effort_raw":3.4,"resource_count":3,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.064,"plot_y":1.826},{"id":86,"name":"Initiative 074","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Non Recoverable","start":"2025-12","finish":"2026-04","duration_months":4.0,"effort_raw":2.16,"resource_count":3,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.004,"plot_y":1.902},{"id":87,"name":"Initiative 075","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-06","finish":"2027-04","duration_months":10.0,"effort_raw":4.26,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.052,"plot_y":1.883},{"id":88,"name":"Initiative 076","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":true,"recoverable":"Recoverable","start":"2026-03","finish":"2027-01","duration_months":10.1,"effort_raw":6.28,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.069,"plot_y":1.959},{"id":89,"name":"Initiative 077","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-04","finish":"2026-12","duration_months":8.0,"effort_raw":5.34,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.157,"plot_y":1.87},{"id":90,"name":"Initiative 078","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":false,"recoverable":"Recoverable","start":"2026-01","finish":"2026-06","duration_months":5.0,"effort_raw":2.83,"resource_count":4,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":4.943,"plot_y":1.861},{"id":91,"name":"Initiative 079","lead":"Workstream E","category":"Infrastructure Program","sa":5.0,"impact":2.0,"impact_level":"L","pm":"PM 11","pm_missing":false,"external":true,"recoverable":"Non Recoverable","start":"2026-04","finish":"2026-08","duration_months":4.0,"effort_raw":4.17,"resource_count":3,"comments":null,"shared_resources":null,"consultancy_spend":null,"plot_x":5.153,"plot_y":2.136},{"id":92,"name":"Initiative 085","lead":"Workstream C","category":"Data and modelling","sa":5.0,"impact":5.0,"impact_level":"H","pm":"Employee 060","pm_missing":false,"external":false,"recoverable":null,"start":"2026-05","finish":"2027-09","duration_months":15.9,"effort_raw":4.26,"resource_count":2,"comments":"[Q1 commentary redacted]","shared_resources":null,"consultancy_spend":null,"plot_x":4.913,"plot_y":5.058},{"id":93,"name":"Initiative 086","lead":"Workstream C","category":"Data and modelling","sa":5.0,"impact":5.0,"impact_level":"H","pm":"Employee 060","pm_missing":false,"external":true,"recoverable":null,"start":"2024-06","finish":"2026-06","duration_months":24.0,"effort_raw":11.5,"resource_count":5,"comments":null,"shared_resources":"Workstream B","consultancy_spend":null,"plot_x":5.114,"plot_y":5.02},{"id":94,"name":"Initiative 091","lead":"Workstream C","category":"Regulatory","sa":5.0,"impact":5.0,"impact_level":"H","pm":"PM 26","pm_missing":false,"external":false,"recoverable":null,"start":"2025-10","finish":"2026-07","duration_months":9.0,"effort_raw":5.39,"resource_count":3,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":5.011,"plot_y":4.907},{"id":95,"name":"Initiative 092","lead":"Workstream C","category":"Regulatory","sa":5.0,"impact":5.0,"impact_level":"H","pm":"Employee 060","pm_missing":false,"external":false,"recoverable":null,"start":"2025-09","finish":"2027-02","duration_months":17.0,"effort_raw":8.34,"resource_count":4,"comments":"[Q1 commentary redacted]","shared_resources":"Workstream B","consultancy_spend":null,"plot_x":4.854,"plot_y":5.143}];
 
 // ─── DESIGN SYSTEM ───────────────────────────────────────────────────
 const T = {
@@ -151,7 +117,164 @@ function classifyQuadrant(d) {
   if (!hiSA && hiI) return "Question Marks";
   return "Reconsider";
 }
-DATA.forEach((d) => (d.quadrant = classifyQuadrant(d)));
+// Prepare a raw data array: ensure quadrant, plot positions, and derived flags are present.
+function prepareData(rows) {
+  return rows.map((d, i) => {
+    const sa = Number(d.sa);
+    const impact = Number(d.impact);
+    const prepared = {
+      id: d.id ?? i,
+      name: d.name ?? `Initiative ${String(i + 1).padStart(3, "0")}`,
+      lead: d.lead ?? "Unassigned",
+      category: d.category ?? "Uncategorised",
+      sa: isFinite(sa) ? sa : 0,
+      impact: isFinite(impact) ? impact : 0,
+      impact_level: d.impact_level ?? (impact >= 4 ? "H" : impact >= 2.5 ? "M" : "L"),
+      pm: d.pm ?? "TBD",
+      pm_missing: d.pm_missing ?? (!d.pm || ["TBC", "TBD", ""].includes(String(d.pm).trim())),
+      external: !!d.external,
+      start: d.start ?? null,
+      finish: d.finish ?? null,
+      duration_months: d.duration_months ?? null,
+      resource_count: d.resource_count ?? 0,
+      shared_resources: d.shared_resources ?? null,
+      consultancy_spend: d.consultancy_spend ?? null,
+      // Jittered plot positions if missing
+      plot_x: d.plot_x ?? (isFinite(sa) ? sa + (Math.random() - 0.5) * 0.35 : 0),
+      plot_y: d.plot_y ?? (isFinite(impact) ? impact + (Math.random() - 0.5) * 0.35 : 0),
+    };
+    prepared.quadrant = classifyQuadrant(prepared);
+    return prepared;
+  });
+}
+
+// Flexible column getter — try multiple aliases, case/whitespace insensitive.
+function getCol(row, ...aliases) {
+  const keys = Object.keys(row);
+  const norm = (s) => String(s).toLowerCase().replace(/[\s_\-\.]/g, "");
+  for (const alias of aliases) {
+    const target = norm(alias);
+    const found = keys.find((k) => norm(k) === target);
+    if (found && row[found] !== undefined && row[found] !== null && row[found] !== "") {
+      return row[found];
+    }
+  }
+  return null;
+}
+
+// Format an Excel date serial or string into "YYYY-MM" or null.
+function toMonthString(v) {
+  if (v === null || v === undefined || v === "") return null;
+  // Excel date serial number
+  if (typeof v === "number" && v > 1000) {
+    const d = new Date(Math.round((v - 25569) * 86400 * 1000));
+    if (!isNaN(d)) return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  }
+  const s = String(v).trim();
+  // Already YYYY-MM or YYYY-MM-DD
+  const m1 = s.match(/^(\d{4})-(\d{1,2})/);
+  if (m1) return `${m1[1]}-${String(parseInt(m1[2], 10)).padStart(2, "0")}`;
+  // YYYY only
+  const m2 = s.match(/^(\d{4})$/);
+  if (m2) return s;
+  // Try Date parse
+  const d = new Date(s);
+  if (!isNaN(d)) return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  return s; // give up, return as-is
+}
+
+// Transform an XLSX row (object keyed by column header) into the canonical shape.
+function transformRow(row, idx) {
+  const name = getCol(row, "Initiative", "Initiative Name", "Name", "Title", "Project");
+  if (!name) return null;
+  const sa = parseFloat(getCol(row, "Strategic Alignment", "SA", "Strategic Align", "Alignment"));
+  const impact = parseFloat(getCol(row, "Impact", "Impact Score", "Business Impact"));
+  if (!isFinite(sa) || !isFinite(impact)) return null;
+  const pm = getCol(row, "PM", "Project Manager", "Owner");
+
+  // External: prefer the explicit "External Resources Required" Y/N flag, fall back to scanning resource-type columns
+  const extFlag = getCol(row, "External Resources Required", "External", "Needs External");
+  let external = false;
+  if (extFlag !== null) {
+    const s = String(extFlag).trim().toLowerCase();
+    external = s === "y" || s === "yes" || s === "true" || s === "1" || /external/.test(s);
+  }
+  if (!external) {
+    // Scan all "Resource Type" columns for any "External" value
+    for (const k of Object.keys(row)) {
+      if (/^resource\s*type/i.test(k.replace(/_/g, " ")) && /external/i.test(String(row[k] || ""))) {
+        external = true; break;
+      }
+    }
+  }
+
+  // Resource count: count non-null "Resource N" cells (1-5+)
+  let resourceCount = 0;
+  for (const k of Object.keys(row)) {
+    if (/^resource\s*\d+$/i.test(k.replace(/_/g, " ")) && row[k] !== null && row[k] !== "") resourceCount += 1;
+  }
+  if (resourceCount === 0) resourceCount = parseInt(getCol(row, "Resources", "Resource Count", "FTE Count")) || 0;
+
+  const start = toMonthString(getCol(row, "Project Start Date", "Start Date", "Start", "Begin"));
+  const finish = toMonthString(getCol(row, "Project Finish Date", "Finish Date", "Finish", "End", "End Date", "Completion", "Completion Date"));
+
+  // Compute duration in months from start/finish if not explicitly given
+  let duration = parseFloat(getCol(row, "Duration", "Duration Months", "Months")) || null;
+  if (!duration && start && finish) {
+    const sd = new Date(start + "-01"), fd = new Date(finish + "-01");
+    if (!isNaN(sd) && !isNaN(fd)) {
+      const m = (fd.getFullYear() - sd.getFullYear()) * 12 + (fd.getMonth() - sd.getMonth());
+      if (m > 0) duration = m;
+    }
+  }
+
+  return {
+    id: idx,
+    name: String(name).trim(),
+    lead: String(getCol(row, "Workstream", "Lead", "Stream", "Team", "Group") || "Unassigned").trim(),
+    category: String(getCol(row, "Category", "Type", "Theme") || "Uncategorised").trim(),
+    sa,
+    impact,
+    impact_level: impact >= 4 ? "H" : impact >= 2.5 ? "M" : "L",
+    pm: pm ? String(pm).trim() : "TBD",
+    pm_missing: !pm || ["TBC", "TBD", ""].includes(String(pm).trim()),
+    external,
+    start,
+    finish,
+    duration_months: duration,
+    resource_count: resourceCount,
+    shared_resources: getCol(row, "Shared Resources", "Shared", "Dependencies") || null,
+    consultancy_spend: parseFloat(getCol(row, "FY 27 Consultancy Spend", "FY27 Consultancy Spend", "Consultancy Spend", "FY27 Consultancy", "Consultancy", "Spend")) || null,
+  };
+}
+
+// Parse an uploaded file (XLSX or JSON) and return a clean data array.
+async function parseUploadedFile(file) {
+  const ext = file.name.split(".").pop().toLowerCase();
+  if (ext === "json") {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+    if (!Array.isArray(parsed)) throw new Error("JSON must be an array of initiatives");
+    return prepareData(parsed);
+  }
+  if (ext === "xlsx" || ext === "xls" || ext === "xlsm") {
+    if (typeof XLSX === "undefined") throw new Error("Spreadsheet library hasn't loaded yet — try again in a moment.");
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(new Uint8Array(buf), { type: "array" });
+    // Find a sheet with usable data — try named sheets first, fall back to first
+    const sheetCandidates = ["Inventory", "Initiatives", "Portfolio", "Data", "Master", ...wb.SheetNames];
+    let rows = [];
+    for (const name of sheetCandidates) {
+      if (!wb.Sheets[name]) continue;
+      const json = XLSX.utils.sheet_to_json(wb.Sheets[name], { defval: null });
+      const transformed = json.map(transformRow).filter(Boolean);
+      if (transformed.length > rows.length) rows = transformed;
+    }
+    if (rows.length === 0) throw new Error("Couldn't find a sheet with 'Initiative', 'Strategic Alignment', and 'Impact' columns. Check headers.");
+    return prepareData(rows);
+  }
+  throw new Error(`Unsupported file type: .${ext}. Use .xlsx or .json`);
+}
 
 function dateToFloat(s) {
   if (!s) return null;
@@ -484,6 +607,120 @@ function Heatmap({ data }) {
   );
 }
 
+// ─── UPLOAD PANEL ────────────────────────────────────────────────────
+function UploadPanel({ open, onClose, onUpload, onReset, onExport, status, dataSource, currentCount }) {
+  const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef(null);
+  if (!open) return null;
+
+  const onDrop = (e) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) onUpload(file);
+  };
+
+  const isLoading = status && status.type === "loading";
+
+  return (
+    <div onClick={onClose} style={{
+      position: "fixed", inset: 0, background: "rgba(10, 31, 51, 0.55)",
+      zIndex: 60, display: "flex", justifyContent: "center", alignItems: "flex-start",
+      paddingTop: 80, animation: "fadeIn 0.2s ease",
+    }}>
+      <div onClick={(e) => e.stopPropagation()} style={{
+        background: T.bg, width: "min(560px, 92vw)", borderRadius: 4,
+        boxShadow: "0 30px 80px rgba(0,0,0,0.25)", padding: "28px 32px",
+        animation: "slideIn 0.25s ease", position: "relative",
+      }}>
+        <button onClick={onClose} style={{
+          position: "absolute", top: 16, right: 16, background: "none",
+          border: `1px solid ${T.ink}`, color: T.ink, width: 28, height: 28,
+          cursor: "pointer", fontSize: 14, fontWeight: 600, borderRadius: 2,
+        }}>×</button>
+
+        <div style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, fontWeight: 700, marginBottom: 6 }}>◆ DATA REFRESH</div>
+        <h3 style={{ fontSize: 22, fontWeight: 700, margin: "0 0 6px", letterSpacing: "-0.02em" }}>Update portfolio data</h3>
+        <p style={{ fontSize: 13, color: T.inkSoft, margin: "0 0 20px", lineHeight: 1.5 }}>
+          Drop a refreshed inventory file. The matrix, timeline, hot spots and register all rebuild from it.
+        </p>
+
+        <div
+          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+          onDragLeave={() => setDragOver(false)}
+          onDrop={onDrop}
+          onClick={() => !isLoading && inputRef.current && inputRef.current.click()}
+          style={{
+            border: `2px dashed ${dragOver ? T.amber : T.ruleStrong}`,
+            background: dragOver ? T.amberSoft : T.bgElev,
+            borderRadius: 4, padding: "32px 24px", textAlign: "center",
+            cursor: isLoading ? "wait" : "pointer", transition: "all 0.15s",
+            opacity: isLoading ? 0.6 : 1,
+          }}
+        >
+          <div style={{ fontSize: 32, marginBottom: 8, color: dragOver ? T.amberDeep : T.subdued }}>↓</div>
+          <div style={{ fontSize: 14, fontWeight: 600, color: T.ink, marginBottom: 4 }}>
+            {dragOver ? "Release to upload" : "Drop file here, or click to browse"}
+          </div>
+          <div style={{ fontSize: 11, color: T.subdued }}>.xlsx · .xls · .json · up to ~5 MB</div>
+          <input
+            ref={inputRef} type="file" accept=".xlsx,.xls,.xlsm,.json,application/json" style={{ display: "none" }}
+            onChange={(e) => {
+              const f = e.target.files && e.target.files[0];
+              if (f) onUpload(f);
+              e.target.value = "";
+            }}
+          />
+        </div>
+
+        {status && (
+          <div style={{
+            marginTop: 16, padding: "10px 14px", borderRadius: 3,
+            background: status.type === "error" ? T.redSoft : status.type === "success" ? "#dcfce7" : T.bgGrid,
+            border: `1px solid ${status.type === "error" ? T.red : status.type === "success" ? T.green : T.rule}`,
+            fontSize: 12, color: status.type === "error" ? T.redDeep : T.ink, fontWeight: 500, lineHeight: 1.5,
+          }}>
+            <span style={{ fontWeight: 700, marginRight: 6 }}>
+              {status.type === "error" ? "✗" : status.type === "success" ? "✓" : "…"}
+            </span>
+            {status.message}
+          </div>
+        )}
+
+        <div style={{ marginTop: 22, paddingTop: 20, borderTop: `1px solid ${T.rule}` }}>
+          <div style={{ fontSize: 9, letterSpacing: 2, color: T.subdued, fontWeight: 700, marginBottom: 10 }}>EXPECTED COLUMNS</div>
+          <div style={{ fontSize: 11, color: T.inkSoft, lineHeight: 1.7, fontFamily: "var(--f-mono)" }}>
+            <strong style={{ color: T.ink }}>required:</strong> Initiative, Strategic Alignment, Impact<br/>
+            <strong style={{ color: T.ink }}>optional:</strong> Workstream, PM, Resource Type, Start, Finish, Duration, Resources, Category, Consultancy Spend
+          </div>
+          <div style={{ fontSize: 11, color: T.subdued, marginTop: 8, lineHeight: 1.5 }}>
+            Header names match flexibly — "SA", "Strategic Align", and "Strategic Alignment" all resolve to the same column.
+          </div>
+        </div>
+
+        <div style={{ marginTop: 22, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ fontSize: 11, color: T.subdued }}>
+            Currently showing <strong style={{ color: T.ink, fontFamily: "var(--f-mono)" }}>{currentCount}</strong> initiatives
+            {dataSource.custom ? <> from <em>{dataSource.name}</em></> : <> · baseline</>}
+          </div>
+          <div style={{ display: "flex", gap: 8 }}>
+            <button onClick={onExport} style={{
+              background: T.bgElev, color: T.inkSoft, border: `1px solid ${T.rule}`,
+              padding: "6px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", borderRadius: 2,
+            }} title="Download current data as JSON">Export JSON</button>
+            {dataSource.custom && (
+              <button onClick={onReset} style={{
+                background: T.bgElev, color: T.amberDeep, border: `1px solid ${T.amber}`,
+                padding: "6px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", borderRadius: 2,
+              }}>Reset to baseline</button>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── DETAIL DRAWER ───────────────────────────────────────────────────
 function Drawer({ initiative, onClose }) {
   if (!initiative) return null;
@@ -593,6 +830,52 @@ function TimelineSummary({ data }) {
 
 // ─── MAIN APP ────────────────────────────────────────────────────────
 function App() {
+  const [data, setData] = useState(() => prepareData(INITIAL_DATA));
+  const [dataSource, setDataSource] = useState({ name: "Q1 FY27 baseline", date: "17 MAR 2026", custom: false });
+  const [showUpload, setShowUpload] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState(null); // { type: 'success'|'error'|'loading', message }
+
+  const handleUpload = async (file) => {
+    if (!file) return;
+    setUploadStatus({ type: "loading", message: `Reading ${file.name}…` });
+    try {
+      const newData = await parseUploadedFile(file);
+      if (newData.length === 0) throw new Error("File contained no valid initiatives.");
+      setData(newData);
+      const today = new Date();
+      const dateStr = `${String(today.getDate()).padStart(2, "0")} ${["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"][today.getMonth()]} ${today.getFullYear()}`;
+      setDataSource({ name: file.name, date: dateStr, custom: true });
+      setUploadStatus({ type: "success", message: `Loaded ${newData.length} initiatives from ${file.name}` });
+      // Reset filters that may no longer be valid
+      setFilterLead("ALL");
+      setFilterQuadrant(null);
+      setSelected(null);
+      setTimeout(() => setShowUpload(false), 900);
+    } catch (err) {
+      setUploadStatus({ type: "error", message: err.message || String(err) });
+    }
+  };
+
+  const handleReset = () => {
+    setData(prepareData(INITIAL_DATA));
+    setDataSource({ name: "Q1 FY27 baseline", date: "17 MAR 2026", custom: false });
+    setFilterLead("ALL");
+    setFilterQuadrant(null);
+    setSelected(null);
+    setUploadStatus({ type: "success", message: "Restored baseline data." });
+    setTimeout(() => setShowUpload(false), 700);
+  };
+
+  const handleExport = () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `portfolio_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const [hovered, setHovered] = useState(null);
   const [selected, setSelected] = useState(null);
   const [filterLead, setFilterLead] = useState("ALL");
@@ -622,18 +905,18 @@ function App() {
   }, []);
 
   const filtered = useMemo(() => {
-    let d = DATA;
+    let d = data;
     if (filterLead !== "ALL") d = d.filter((x) => x.lead === filterLead);
     if (filterQuadrant) d = d.filter((x) => x.quadrant === filterQuadrant);
     return d;
-  }, [filterLead, filterQuadrant]);
+  }, [data, filterLead, filterQuadrant]);
 
   const matrixData = useMemo(() => {
-    return filterLead === "ALL" ? DATA : DATA.filter((x) => x.lead === filterLead);
-  }, [filterLead]);
+    return filterLead === "ALL" ? data : data.filter((x) => x.lead === filterLead);
+  }, [data, filterLead]);
 
   const hotSpots = useMemo(() => computeHotSpots(matrixData), [matrixData]);
-  const leads = useMemo(() => ["ALL", ...new Set(DATA.map((d) => d.lead))].sort(), []);
+  const leads = useMemo(() => ["ALL", ...new Set(data.map((d) => d.lead))].sort(), [data]);
 
   const stats = useMemo(() => {
     const t = matrixData.length;
@@ -667,13 +950,23 @@ function App() {
           <div>
             <div style={{ fontSize: 13, fontWeight: 700, color: T.ink, letterSpacing: "-0.01em" }}>Portfolio Diagnostic</div>
             <div style={{ fontSize: 10, color: T.subdued, fontWeight: 500, marginTop: 1 }}>
-              Q1 FY27  ·  {DATA.length} initiatives  ·  {leads.length - 1} workstreams
+              {dataSource.custom ? "Refreshed" : "Q1 FY27"}  ·  {data.length} initiatives  ·  {leads.length - 1} workstreams
             </div>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span className="pulse" style={{ width: 6, height: 6, borderRadius: "50%", background: T.green }}></span>
-          <span style={{ fontSize: 10, color: T.subdued, letterSpacing: 1.5, fontWeight: 600 }}>DATA CURRENT · 17 MAR 2026</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <span className="pulse" style={{ width: 6, height: 6, borderRadius: "50%", background: dataSource.custom ? T.amber : T.green }}></span>
+          <span style={{ fontSize: 10, color: T.subdued, letterSpacing: 1.5, fontWeight: 600 }}>
+            {dataSource.custom ? "REFRESHED" : "DATA CURRENT"} · {dataSource.date}
+          </span>
+          <button onClick={() => { setUploadStatus(null); setShowUpload(true); }} style={{
+            background: T.bg, color: T.ink, border: `1px solid ${T.ruleStrong}`,
+            padding: "6px 12px", fontSize: 11, fontWeight: 600, cursor: "pointer", borderRadius: 2,
+            display: "inline-flex", alignItems: "center", gap: 6,
+          }} title="Upload refreshed data">
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M6 1.5v6m0 0L3.5 5M6 7.5L8.5 5M2 9.5h8"/></svg>
+            Update data
+          </button>
         </div>
       </header>
 
@@ -751,7 +1044,7 @@ function App() {
                     <h2 style={{ fontSize: 22, fontWeight: 700, margin: "4px 0 0", letterSpacing: "-0.02em" }}>Prioritisation Matrix</h2>
                   </div>
                   <div style={{ fontSize: 10, color: T.subdued, fontWeight: 500, textAlign: "right", lineHeight: 1.4 }}>
-                    {filtered.length} of {DATA.length} shown<br/>
+                    {filtered.length} of {data.length} shown<br/>
                     <span style={{ fontFamily: "var(--f-mono)" }}>· hover · click for record ·</span>
                   </div>
                 </div>
@@ -994,6 +1287,16 @@ function App() {
       </footer>
 
       <Drawer initiative={selected} onClose={() => setSelected(null)} />
+      <UploadPanel
+        open={showUpload}
+        onClose={() => setShowUpload(false)}
+        onUpload={handleUpload}
+        onReset={handleReset}
+        onExport={handleExport}
+        status={uploadStatus}
+        dataSource={dataSource}
+        currentCount={data.length}
+      />
     </div>
   );
 }
@@ -1002,14 +1305,10 @@ function App() {
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(<App />);
 
-// Hide loader once React has rendered
 requestAnimationFrame(() => {
   setTimeout(() => {
     const loader = document.getElementById("loading");
-    if (loader) {
-      loader.classList.add("hidden");
-      setTimeout(() => loader.remove(), 300);
-    }
+    if (loader) { loader.classList.add("hidden"); setTimeout(() => loader.remove(), 300); }
   }, 100);
 });
 </script>
