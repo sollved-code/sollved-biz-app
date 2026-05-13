@@ -42,10 +42,10 @@
 
   /* ---------- HEADER ---------- */
   header.masthead {
-    background: var(--alpine);
-    color: var(--cream);
+    background: var(--cream);
+    color: var(--alpine-deep);
     padding: 36px 48px 32px;
-    border-bottom: 1px solid var(--alpine-deep);
+    border-bottom: 1px solid var(--line);
     position: relative;
     overflow: hidden;
   }
@@ -53,8 +53,15 @@
     content: '';
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(circle at 90% 50%, rgba(168, 127, 61, 0.08) 0%, transparent 60%);
+    background-image: radial-gradient(circle at 90% 50%, rgba(168, 127, 61, 0.06) 0%, transparent 60%);
     pointer-events: none;
+  }
+  header.masthead::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 48px; height: 1px;
+    background: var(--gold);
   }
 
   .brand-line {
@@ -62,28 +69,29 @@
     margin-bottom: 32px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
-    color: rgba(245, 241, 232, 0.55);
+    color: var(--muted);
     position: relative; z-index: 1;
   }
 
   .monogram {
     display: inline-flex; align-items: center; gap: 10px;
-    color: var(--cream);
+    color: var(--alpine);
     font-family: 'Fraunces', serif;
     font-size: 13px; letter-spacing: 0.15em;
   }
   .monogram-mark {
     width: 22px; height: 22px;
-    border: 1px solid var(--cream);
+    border: 1px solid var(--alpine);
     border-radius: 50%;
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 11px; font-weight: 500;
     position: relative;
+    color: var(--alpine);
   }
   .monogram-mark::before {
     content: '';
     position: absolute; inset: 2px;
-    border: 1px solid rgba(245, 241, 232, 0.4);
+    border: 1px solid rgba(45, 63, 54, 0.3);
     border-radius: 50%;
   }
 
@@ -95,6 +103,7 @@
     letter-spacing: -0.02em;
     margin-bottom: 14px;
     position: relative; z-index: 1;
+    color: var(--alpine-deep);
   }
   h1.title em {
     font-style: italic;
@@ -106,7 +115,7 @@
     font-family: 'Fraunces', serif;
     font-style: italic; font-weight: 300;
     font-size: 18px;
-    color: rgba(245, 241, 232, 0.75);
+    color: var(--muted);
     max-width: 720px;
     position: relative; z-index: 1;
   }
@@ -114,15 +123,15 @@
   .meta-row {
     margin-top: 28px;
     padding-top: 20px;
-    border-top: 1px solid rgba(245, 241, 232, 0.15);
+    border-top: 1px solid var(--line);
     display: flex; flex-wrap: wrap; gap: 36px;
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
-    color: rgba(245, 241, 232, 0.6);
+    color: var(--muted);
     position: relative; z-index: 1;
   }
   .meta-row span strong {
-    color: var(--cream);
+    color: var(--alpine);
     font-weight: 500;
     margin-left: 6px;
   }
@@ -172,26 +181,22 @@
 
   /* ---------- THIS WEEK BLOCK ---------- */
   .this-week {
-    background: linear-gradient(135deg, var(--alpine) 0%, var(--alpine-deep) 100%);
-    color: var(--cream);
+    background: var(--paper);
+    color: var(--alpine-deep);
     padding: 36px 40px;
     margin-bottom: 56px;
     position: relative;
     overflow: hidden;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--alpine);
   }
   .this-week::before {
     content: '';
     position: absolute;
     top: 0; right: 0;
     width: 280px; height: 280px;
-    background: radial-gradient(circle, rgba(168, 127, 61, 0.18) 0%, transparent 65%);
-  }
-  .this-week::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 48px; height: 1px;
-    background: var(--gold);
+    background: radial-gradient(circle, rgba(168, 127, 61, 0.08) 0%, transparent 65%);
+    pointer-events: none;
   }
 
   .tw-head {
@@ -212,6 +217,7 @@
     font-size: 34px;
     letter-spacing: -0.015em;
     line-height: 1.1;
+    color: var(--alpine-deep);
   }
   .tw-title em { color: var(--gold); font-style: italic; }
 
@@ -219,14 +225,14 @@
     font-family: 'Fraunces', serif;
     font-style: italic;
     font-size: 14px;
-    color: rgba(245, 241, 232, 0.65);
+    color: var(--muted);
     text-align: right;
   }
   .tw-week-counter strong {
     display: block;
     font-style: normal;
     font-size: 28px;
-    color: var(--cream);
+    color: var(--alpine);
     font-weight: 300;
     letter-spacing: -0.01em;
   }
@@ -238,7 +244,7 @@
     position: relative;
   }
   .tw-block {
-    border-top: 1px solid rgba(245, 241, 232, 0.25);
+    border-top: 1px solid var(--line);
     padding-top: 16px;
   }
   .tw-block-label {
@@ -251,7 +257,7 @@
     font-family: 'Fraunces', serif;
     font-style: italic;
     font-size: 14px;
-    color: rgba(245, 241, 232, 0.65);
+    color: var(--muted);
     margin-bottom: 10px;
   }
   .tw-block-action {
@@ -259,7 +265,7 @@
     font-weight: 400;
     font-size: 17px;
     line-height: 1.35;
-    color: var(--cream);
+    color: var(--alpine-deep);
   }
 
   /* ---------- PROGRESS ---------- */
@@ -550,19 +556,22 @@
 
   /* ---------- KPI BLOCK ---------- */
   .kpi-block {
-    background: var(--alpine);
-    color: var(--cream);
+    background: var(--cream);
+    color: var(--alpine-deep);
     padding: 40px 44px;
     margin-top: 56px;
     position: relative;
     overflow: hidden;
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--gold);
   }
   .kpi-block::before {
     content: '';
     position: absolute;
     top: 0; right: 0;
     width: 200px; height: 200px;
-    background: radial-gradient(circle, rgba(168, 127, 61, 0.15) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(168, 127, 61, 0.10) 0%, transparent 70%);
+    pointer-events: none;
   }
   .kpi-kicker {
     font-family: 'JetBrains Mono', monospace;
@@ -578,6 +587,7 @@
     margin-bottom: 28px;
     letter-spacing: -0.01em;
     position: relative;
+    color: var(--alpine-deep);
   }
   .kpi-title em { color: var(--gold); font-style: italic; }
   .kpi-grid {
@@ -587,7 +597,7 @@
     position: relative;
   }
   .kpi {
-    border-top: 1px solid rgba(245, 241, 232, 0.2);
+    border-top: 1px solid var(--line);
     padding-top: 16px;
   }
   .kpi-num {
@@ -595,7 +605,7 @@
     font-size: 38px;
     font-weight: 300;
     line-height: 1;
-    color: var(--cream);
+    color: var(--alpine);
     margin-bottom: 6px;
     letter-spacing: -0.02em;
   }
@@ -603,7 +613,7 @@
   .kpi-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: rgba(245, 241, 232, 0.6);
+    color: var(--muted);
     line-height: 1.5;
   }
 
