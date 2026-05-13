@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SOLLVED · Business Development Action Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --alpine: #2d3f36;
+    --alpine-deep: #1f2c25;
+    --alpine-soft: #3d5448;
+    --cream: #f5f1e8;
+    --cream-warm: #ebe4d2;
+    --paper: #fbf8f1;
+    --ink: #1a1a1a;
+    --muted: #6b6b66;
+    --line: #d9d3c2;
+    --gold: #a87f3d;
+    --red: #b04a3a;
+    --amber: #c89238;
+    --green: #5a7a55;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter Tight', -apple-system, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.55;
+    font-size: 15px;
+    font-weight: 400;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      radial-gradient(at 20% 10%, rgba(45, 63, 54, 0.03) 0px, transparent 50%),
+      radial-gradient(at 80% 90%, rgba(168, 127, 61, 0.04) 0px, transparent 50%);
+  }
+
+  /* ---------- HEADER ---------- */
+  header.masthead {
+    background: var(--alpine);
+    color: var(--cream);
+    padding: 36px 48px 32px;
+    border-bottom: 1px solid var(--alpine-deep);
+    position: relative;
+    overflow: hidden;
+  }
+  header.masthead::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 90% 50%, rgba(168, 127, 61, 0.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .brand-line {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 32px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(245, 241, 232, 0.55);
+    position: relative; z-index: 1;
+  }
+
+  .monogram {
+    display: inline-flex; align-items: center; gap: 10px;
+    color: var(--cream);
+    font-family: 'Fraunces', serif;
+    font-size: 13px; letter-spacing: 0.15em;
+  }
+  .monogram-mark {
+    width: 22px; height: 22px;
+    border: 1px solid var(--cream);
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500;
+    position: relative;
+  }
+  .monogram-mark::before {
+    content: '';
+    position: absolute; inset: 2px;
+    border: 1px solid rgba(245, 241, 232, 0.4);
+    border-radius: 50%;
+  }
+
+  h1.title {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: clamp(40px, 5.5vw, 64px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    margin-bottom: 14px;
+    position: relative; z-index: 1;
+  }
+  h1.title em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--gold);
+  }
+
+  .subtitle {
+    font-family: 'Fraunces', serif;
+    font-style: italic; font-weight: 300;
+    font-size: 18px;
+    color: rgba(245, 241, 232, 0.75);
+    max-width: 720px;
+    position: relative; z-index: 1;
+  }
+
+  .meta-row {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(245, 241, 232, 0.15);
+    display: flex; flex-wrap: wrap; gap: 36px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: rgba(245, 241, 232, 0.6);
+    position: relative; z-index: 1;
+  }
+  .meta-row span strong {
+    color: var(--cream);
+    font-weight: 500;
+    margin-left: 6px;
+  }
+
+  /* ---------- NAV ---------- */
+  nav.phases {
+    background: var(--cream);
+    padding: 0 48px;
+    border-bottom: 1px solid var(--line);
+    position: sticky; top: 0; z-index: 50;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  nav.phases ol {
+    display: flex; list-style: none; gap: 0;
+    min-width: max-content;
+  }
+  nav.phases a {
+    display: block;
+    padding: 18px 24px;
+    text-decoration: none;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+  nav.phases a:hover { color: var(--alpine); }
+  nav.phases a.active {
+    color: var(--alpine);
+    border-bottom-color: var(--gold);
+  }
+  nav.phases a .num {
+    font-family: 'Fraunces', serif;
+    font-size: 14px; font-style: italic;
+    color: var(--gold); margin-right: 8px;
+    text-transform: none; letter-spacing: 0;
+  }
+
+  /* ---------- LAYOUT ---------- */
+  main {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 48px 48px 96px;
+  }
+
+  /* ---------- THIS WEEK BLOCK ---------- */
+  .this-week {
+    background: linear-gradient(135deg, var(--alpine) 0%, var(--alpine-deep) 100%);
+    color: var(--cream);
+    padding: 36px 40px;
+    margin-bottom: 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .this-week::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(168, 127, 61, 0.18) 0%, transparent 65%);
+  }
+  .this-week::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 48px; height: 1px;
+    background: var(--gold);
+  }
+
+  .tw-head {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 28px;
+    position: relative;
+    flex-wrap: wrap; gap: 16px;
+  }
+  .tw-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .tw-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 34px;
+    letter-spacing: -0.015em;
+    line-height: 1.1;
+  }
+  .tw-title em { color: var(--gold); font-style: italic; }
+
+  .tw-week-counter {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: rgba(245, 241, 232, 0.65);
+    text-align: right;
+  }
+  .tw-week-counter strong {
+    display: block;
+    font-style: normal;
+    font-size: 28px;
+    color: var(--cream);
+    font-weight: 300;
+    letter-spacing: -0.01em;
+  }
+
+  .tw-blocks {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    position: relative;
+  }
+  .tw-block {
+    border-top: 1px solid rgba(245, 241, 232, 0.25);
+    padding-top: 16px;
+  }
+  .tw-block-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .tw-block-time {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: rgba(245, 241, 232, 0.65);
+    margin-bottom: 10px;
+  }
+  .tw-block-action {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.35;
+    color: var(--cream);
+  }
+
+  /* ---------- PROGRESS ---------- */
+  .progress-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 24px 28px;
+    margin-bottom: 56px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 32px;
+    align-items: center;
+    position: relative;
+  }
+  .progress-card::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px;
+    width: 28px; height: 1px;
+    background: var(--gold);
+  }
+  .progress-card::after {
+    content: '';
+    position: absolute;
+    top: -1px; left: -1px;
+    width: 1px; height: 28px;
+    background: var(--gold);
+  }
+  .progress-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .progress-bar-wrap {
+    height: 4px;
+    background: var(--cream-warm);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--alpine), var(--alpine-soft));
+    transition: width 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .progress-stat {
+    font-family: 'Fraunces', serif;
+    font-size: 38px;
+    font-weight: 300;
+    color: var(--alpine);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .progress-stat .of {
+    font-style: italic;
+    color: var(--muted);
+    font-size: 20px;
+  }
+  .progress-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .ghost-btn {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .ghost-btn:hover {
+    border-color: var(--alpine);
+    color: var(--alpine);
+  }
+  .ghost-btn.danger:hover {
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  /* ---------- PHASE ---------- */
+  section.phase {
+    margin-bottom: 72px;
+    scroll-margin-top: 80px;
+  }
+
+  .phase-header {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 24px;
+    align-items: baseline;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 36px;
+  }
+  .phase-num {
+    font-family: 'Fraunces', serif;
+    font-size: 80px;
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1;
+    color: var(--alpine);
+    letter-spacing: -0.04em;
+  }
+  .phase-meta { flex: 1; }
+  .phase-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .phase-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 32px;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    color: var(--alpine-deep);
+    margin-bottom: 8px;
+  }
+  .phase-summary {
+    font-family: 'Fraunces', serif;
+    font-style: italic; font-weight: 300;
+    font-size: 16px;
+    color: var(--muted);
+    max-width: 640px;
+  }
+  .phase-timing {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.6;
+  }
+  .phase-timing strong {
+    display: block;
+    color: var(--alpine);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    text-transform: none;
+    margin-bottom: 2px;
+  }
+
+  /* ---------- TASKS ---------- */
+  .tasks { display: grid; gap: 12px; }
+
+  .task {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 18px 22px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    transition: all 0.2s ease;
+  }
+  .task:hover {
+    border-color: var(--alpine-soft);
+    transform: translateX(2px);
+  }
+  .task.done {
+    background: var(--cream);
+    border-color: var(--cream-warm);
+  }
+  .task.done .task-title {
+    text-decoration: line-through;
+    text-decoration-color: var(--muted);
+    color: var(--muted);
+  }
+  .task.done .task-detail { opacity: 0.55; }
+
+  .checkbox {
+    width: 22px; height: 22px;
+    border: 1.5px solid var(--alpine);
+    border-radius: 3px;
+    background: var(--paper);
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.2s;
+    margin-top: 2px;
+  }
+  .checkbox:hover { background: var(--cream); }
+  .checkbox.checked {
+    background: var(--alpine);
+    border-color: var(--alpine);
+  }
+  .checkbox.checked::after {
+    content: '';
+    position: absolute;
+    left: 6px; top: 2px;
+    width: 6px; height: 11px;
+    border: solid var(--cream);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+
+  .task-body { min-width: 0; }
+  .task-head {
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .task-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+  .task-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+    color: var(--alpine-deep);
+  }
+  .task-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-left: 4px;
+  }
+  .task-detail {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.55;
+    margin-top: 6px;
+  }
+  .task-detail strong { color: var(--ink); font-weight: 500; }
+
+  .task-tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 3px 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 4px;
+  }
+  .tag-setup { background: rgba(45, 63, 54, 0.08); color: var(--alpine); }
+  .tag-weekly { background: rgba(168, 127, 61, 0.12); color: var(--gold); }
+  .tag-monthly { background: rgba(90, 122, 85, 0.14); color: var(--green); }
+  .tag-quarterly { background: rgba(200, 146, 56, 0.14); color: var(--amber); }
+
+  /* ---------- NOTES ---------- */
+  .notes-card {
+    margin-top: 24px;
+    background: linear-gradient(180deg, var(--cream) 0%, var(--paper) 100%);
+    border: 1px solid var(--cream-warm);
+    border-left: 3px solid var(--gold);
+    padding: 20px 24px;
+  }
+  .notes-card .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+  .notes-card textarea {
+    width: 100%;
+    min-height: 70px;
+    border: none;
+    background: transparent;
+    font-family: 'Fraunces', serif;
+    font-size: 15px;
+    font-style: italic;
+    color: var(--alpine-deep);
+    resize: vertical;
+    outline: none;
+    line-height: 1.6;
+  }
+  .notes-card textarea::placeholder {
+    color: var(--muted);
+    opacity: 0.6;
+  }
+
+  /* ---------- KPI BLOCK ---------- */
+  .kpi-block {
+    background: var(--alpine);
+    color: var(--cream);
+    padding: 40px 44px;
+    margin-top: 56px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-block::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(168, 127, 61, 0.15) 0%, transparent 70%);
+  }
+  .kpi-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .kpi-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 300;
+    font-size: 28px;
+    margin-bottom: 28px;
+    letter-spacing: -0.01em;
+    position: relative;
+  }
+  .kpi-title em { color: var(--gold); font-style: italic; }
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 28px;
+    position: relative;
+  }
+  .kpi {
+    border-top: 1px solid rgba(245, 241, 232, 0.2);
+    padding-top: 16px;
+  }
+  .kpi-num {
+    font-family: 'Fraunces', serif;
+    font-size: 38px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--cream);
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .kpi-num em { color: var(--gold); font-style: italic; }
+  .kpi-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: rgba(245, 241, 232, 0.6);
+    line-height: 1.5;
+  }
+
+  /* ---------- TIME BUDGET ---------- */
+  .time-budget {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 28px 32px;
+    margin-bottom: 56px;
+    position: relative;
+  }
+  .time-budget::before {
+    content: '';
+    position: absolute;
+    top: -1px; right: -1px;
+    width: 28px; height: 1px;
+    background: var(--gold);
+  }
+  .time-budget::after {
+    content: '';
+    position: absolute;
+    top: -1px; right: -1px;
+    width: 1px; height: 28px;
+    background: var(--gold);
+  }
+  .tb-kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .tb-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 22px;
+    color: var(--alpine-deep);
+    margin-bottom: 18px;
+    letter-spacing: -0.01em;
+  }
+  .tb-title em { font-style: italic; color: var(--gold); }
+  .tb-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 18px;
+  }
+  .tb-cell {
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+  .tb-time {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--alpine);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .tb-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    text-align: center;
+    padding: 48px 24px;
+    border-top: 1px solid var(--line);
+    margin-top: 80px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  footer em {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    font-size: 13px;
+    color: var(--alpine);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /* ---------- RESPONSIVE ---------- */
+  @media (max-width: 720px) {
+    header.masthead { padding: 28px 24px; }
+    nav.phases { padding: 0 24px; }
+    main { padding: 32px 24px 64px; }
+    .phase-header { grid-template-columns: 1fr; gap: 12px; }
+    .phase-num { font-size: 56px; }
+    .phase-title { font-size: 24px; }
+    .phase-timing { text-align: left; }
+    .progress-card { grid-template-columns: 1fr; gap: 20px; }
+    .task { grid-template-columns: auto 1fr; padding: 16px; }
+    .task-tag { grid-column: 2; justify-self: flex-start; }
+    .kpi-block, .this-week, .time-budget { padding: 28px 24px; }
+    .meta-row { gap: 18px; }
+    .tw-head { flex-direction: column; align-items: flex-start; }
+    .tw-week-counter { text-align: left; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .phase, .this-week, .time-budget { animation: fadeUp 0.5s ease both; }
+  .this-week { animation-delay: 0.05s; }
+  .time-budget { animation-delay: 0.1s; }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="brand-line">
+    <div class="monogram">
+      <span class="monogram-mark">S</span>
+      <span>SOLLVED · EST. 2017</span>
+    </div>
+    <span>Internal Document · Confidential</span>
+  </div>
+  <h1 class="title">Business Development<br><em>Action Plan</em></h1>
+  <p class="subtitle">A sustainable BD operating system designed around one focused day per week — built to compound through delivery seasons rather than collapse under them.</p>
+  <div class="meta-row">
+    <span>OWNER · <strong>Jason</strong></span>
+    <span>HORIZON · <strong>90 Days</strong></span>
+    <span>CADENCE · <strong>1 Day / Week</strong></span>
+    <span>BUDGET · <strong>4 – 6 Hours</strong></span>
+    <span>TARGET · <strong>5–6 Diagnostics</strong></span>
+  </div>
+</header>
+
+<nav class="phases" id="phaseNav">
+  <ol>
+    <li><a href="#phase-1" data-phase="1"><span class="num">I.</span>Foundation</a></li>
+    <li><a href="#phase-2" data-phase="2"><span class="num">II.</span>Weekly Engine</a></li>
+    <li><a href="#phase-3" data-phase="3"><span class="num">III.</span>Monthly Lift</a></li>
+    <li><a href="#phase-4" data-phase="4"><span class="num">IV.</span>Quarterly Review</a></li>
+  </ol>
+</nav>
+
+<main>
+
+  <!-- THIS WEEK -->
+  <section class="this-week">
+    <div class="tw-head">
+      <div>
+        <div class="tw-kicker">The BD Day</div>
+        <div class="tw-title">One <em>focused day.</em> Three blocks. Done.</div>
+      </div>
+      <div class="tw-week-counter">
+        <strong id="weekNum">Week 1</strong>
+        of 13
+      </div>
+    </div>
+    <div class="tw-blocks">
+      <div class="tw-block">
+        <div class="tw-block-label">Block 1 — Morning</div>
+        <div class="tw-block-time">90 minutes</div>
+        <div class="tw-block-action">Write & publish this week's anchor post. Reply to comments on last week's.</div>
+      </div>
+      <div class="tw-block">
+        <div class="tw-block-label">Block 2 — Midday</div>
+        <div class="tw-block-time">90 minutes</div>
+        <div class="tw-block-action">Outreach — one warm intro request, one researched email, three thoughtful comments on senior buyers' posts.</div>
+      </div>
+      <div class="tw-block">
+        <div class="tw-block-label">Block 3 — Afternoon</div>
+        <div class="tw-block-time">60 – 90 minutes</div>
+        <div class="tw-block-action">Pipeline review. Update tracker. Set next week's anchor post and outreach target. Capture diagnostic conversation notes.</div>
+      </div>
+      <div class="tw-block">
+        <div class="tw-block-label">Buffer</div>
+        <div class="tw-block-time">30 – 60 minutes</div>
+        <div class="tw-block-action">Margin for the unexpected — a follow-up call, a diagnostic conversation, or simply protected thinking time.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TIME BUDGET -->
+  <section class="time-budget">
+    <div class="tb-kicker">The 90-Day Time Budget</div>
+    <h2 class="tb-title">Realistic, <em>not heroic</em></h2>
+    <div class="tb-grid">
+      <div class="tb-cell">
+        <div class="tb-time">~ 12 hrs</div>
+        <div class="tb-label">Phase 1 setup<br>One-off, weeks 1–2</div>
+      </div>
+      <div class="tb-cell">
+        <div class="tb-time">~ 50 hrs</div>
+        <div class="tb-label">Weekly engine<br>10 active weeks × 5 hrs</div>
+      </div>
+      <div class="tb-cell">
+        <div class="tb-time">~ 8 hrs</div>
+        <div class="tb-label">Monthly lift<br>3 × ~3 hrs</div>
+      </div>
+      <div class="tb-cell">
+        <div class="tb-time">~ 4 hrs</div>
+        <div class="tb-label">Quarterly review<br>End-of-cycle recalibration</div>
+      </div>
+      <div class="tb-cell">
+        <div class="tb-time">~ 74 hrs</div>
+        <div class="tb-label">Total over 90 days<br>≈ 6 hrs / week average</div>
+      </div>
+      <div class="tb-cell">
+        <div class="tb-time">3 weeks</div>
+        <div class="tb-label">Built-in margin<br>For delivery spikes</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <div class="progress-card">
+    <div>
+      <div class="progress-label">Plan Progress</div>
+      <div class="progress-bar-wrap"><div class="progress-bar" id="progressBar" style="width:0%"></div></div>
+      <div class="progress-actions">
+        <button class="ghost-btn" id="weekUpBtn">Advance week →</button>
+        <button class="ghost-btn" id="weekDownBtn">← Previous week</button>
+        <button class="ghost-btn danger" id="resetBtn">↺ Reset all progress</button>
+      </div>
+    </div>
+    <div class="progress-stat">
+      <span id="completedCount">0</span><span class="of"> / <span id="totalCount">0</span></span>
+    </div>
+  </div>
+
+  <!-- PHASES -->
+  <div id="phaseContainer"></div>
+
+  <!-- KPI BLOCK -->
+  <section class="kpi-block">
+    <div class="kpi-kicker">Revised 90-Day Targets</div>
+    <h2 class="kpi-title">What success <em>looks like</em> at this cadence</h2>
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="kpi-num">25</div>
+        <div class="kpi-label">Named accounts with researched angle</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num">20</div>
+        <div class="kpi-label">LinkedIn posts published (2 / week × 10 active weeks)</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num">10<em>+</em></div>
+        <div class="kpi-label">Warm introductions requested from your network</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num">5 – 6</div>
+        <div class="kpi-label">Diagnostic conversations completed</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num">1 – 2</div>
+        <div class="kpi-label">Qualified proposals issued from diagnostics</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-num">1</div>
+        <div class="kpi-label">Executive roundtable scoped — hosted in Q2</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <em>"The pattern I keep seeing in programs at this stage…"</em>
+    SOLLVED Consulting · BD Operating System · v2.0 — Sustainable Edition
+  </footer>
+
+</main>
+
+<script>
+// ============================================
+// PLAN DATA — REVISED FOR 1 DAY/WEEK CADENCE
+// ============================================
+const PLAN = [
+  {
+    id: 1,
+    kicker: "Phase One",
+    title: "Foundation & Positioning",
+    summary: "Front-loaded one-off work that makes everything afterwards work. Done in weeks 1–2, then never touched again.",
+    timingLabel: "Week 1 — 2",
+    timingNote: "≈ 12 hrs one-off",
+    tasks: [
+      {
+        id: "1.1",
+        title: "Choose the lead sector for this quarter",
+        time: "30 min",
+        detail: "Pick <strong>one</strong>: energy reform, infrastructure delivery, health sector reform, or government major-program offices. Concentration beats breadth.",
+        tag: "setup", tagLabel: "Setup"
+      },
+      {
+        id: "1.2",
+        title: "Rewrite LinkedIn headline, About, and banner",
+        time: "3 hrs",
+        detail: "Headline draft: <em>“Helping senior teams deliver reform programs that are slipping | Founder, SOLLVED Consulting”</em>. About in first person, problem-led. Banner in alpine green with Fraunces wordmark.",
+        tag: "setup", tagLabel: "Setup"
+      },
+      {
+        id: "1.3",
+        title: "Curate Featured section + polish company page",
+        time: "2 hrs",
+        detail: "Pin best post, a sanitised case study, and diagnostic conversation link. Update company page to credibility-backstop standard — banner, about, services. Not a channel, a brochure.",
+        tag: "setup", tagLabel: "Setup"
+      },
+      {
+        id: "1.4",
+        title: "Build the 25-account named target list",
+        time: "3 hrs",
+        detail: "In your chosen sector. For each: organisation, named buyer (Program/Reform/Transformation Director, Chief of Staff, COO, Deputy Secretary, Portfolio Director), trigger event, and the specific observation you'd bring.",
+        tag: "setup", tagLabel: "Setup"
+      },
+      {
+        id: "1.5",
+        title: "Define & document the diagnostic conversation offer",
+        time: "1.5 hrs",
+        detail: "90 minutes, free, structured, with a written one-pager back. Document the prompts you'll ask, the deliverable format, and your follow-up cadence. This is your funnel.",
+        tag: "setup", tagLabel: "Setup"
+      },
+      {
+        id: "1.6",
+        title: "Set up a simple pipeline tracker",
+        time: "1 hr",
+        detail: "Columns: Account · Buyer · Source (intro/inbound/outbound) · Last touch · Next action · Stage (cold / engaged / diagnostic booked / proposal / won). Spreadsheet is enough.",
+        tag: "setup", tagLabel: "Setup"
+      },
+      {
+        id: "1.7",
+        title: "Draft 6 post ideas across the three content pillars",
+        time: "1 hr",
+        detail: "<strong>Reform Reality</strong> · <strong>Team Under Pressure</strong> · <strong>Craft of Delivery.</strong> Two ideas per pillar. Headlines and key claims only — full drafting happens during weekly blocks.",
+        tag: "setup", tagLabel: "Setup"
+      }
+    ]
+  },
+  {
+    id: 2,
+    kicker: "Phase Two",
+    title: "The Weekly Engine",
+    summary: "One day a week, three blocks, repeat. These are the only routines you commit to. Everything that compounds happens here.",
+    timingLabel: "Weeks 3 — 13",
+    timingNote: "≈ 5 hrs / week",
+    tasks: [
+      {
+        id: "2.1",
+        title: "Block 1 — Write & publish one anchor post",
+        time: "90 min / week",
+        detail: "Pick one idea from the backlog, write it, post it. Same publish window each week (Tues or Wed morning works for senior buyers). Reply to comments on last week's post first — the algorithm rewards it.",
+        tag: "weekly", tagLabel: "Weekly"
+      },
+      {
+        id: "2.2",
+        title: "Block 2 — One warm intro request + one cold-ish email",
+        time: "45 min / week",
+        detail: "<strong>Warm intro:</strong> ask one network contact for one specific introduction. <strong>Email:</strong> one researched, named-program-specific email to a buyer on your list. Value offer (e.g. a short note on three comparable programs), not a meeting request.",
+        tag: "weekly", tagLabel: "Weekly"
+      },
+      {
+        id: "2.3",
+        title: "Block 2 — Three substantive comments on senior buyers' posts",
+        time: "45 min / week",
+        detail: "Comments on senior buyers' posts is BD. Senior buyers read comments more than posts. Add a sharp observation — never <em>“great post!”</em>. Three quality > thirty hollow.",
+        tag: "weekly", tagLabel: "Weekly"
+      },
+      {
+        id: "2.4",
+        title: "Block 3 — Pipeline review + plan next week",
+        time: "60 min / week",
+        detail: "Update tracker. Note: who replied, who didn't, what's progressing. Decide next week's anchor post topic and outreach target. Capture diagnostic conversation notes. The keystone ritual — without it, BD decays.",
+        tag: "weekly", tagLabel: "Weekly"
+      },
+      {
+        id: "2.5",
+        title: "Optional second post — only if backlog and energy allow",
+        time: "45 min / week",
+        detail: "A shorter observational post, often built from a comment you made or a diagnostic insight. Don't force it. Two great posts beat three mediocre ones.",
+        tag: "weekly", tagLabel: "Weekly"
+      }
+    ]
+  },
+  {
+    id: 3,
+    kicker: "Phase Three",
+    title: "The Monthly Lift",
+    summary: "Once a month, do one bigger thing alongside the weekly engine. These create discontinuous jumps in pipeline — not slow grinds.",
+    timingLabel: "Months 1, 2, 3",
+    timingNote: "≈ 3 hrs / month",
+    tasks: [
+      {
+        id: "3.1",
+        title: "Month 1 — Send the network reactivation batch",
+        time: "3 hrs",
+        detail: "Identify 10 Tier-A network contacts (past clients, trusted peers). Send each a value-first note referencing a specific observation or piece — not a check-in. <em>“Saw [trigger] and thought of your team. Three patterns I'm seeing…”</em>",
+        tag: "monthly", tagLabel: "Month 1"
+      },
+      {
+        id: "3.2",
+        title: "Month 2 — Write one long-form piece (or anchor post series)",
+        time: "3 hrs",
+        detail: "≈ 1,200–1,500 words. LinkedIn article or site post. Repurpose into 4 short posts for the next month's weekly engine. This is your monthly authority anchor.",
+        tag: "monthly", tagLabel: "Month 2"
+      },
+      {
+        id: "3.3",
+        title: "Month 3 — Scope the executive roundtable",
+        time: "3 hrs",
+        detail: "Don't host yet — <strong>scope it.</strong> Define topic, format, invite list of 8–10 names. Aim to host in Q2. Premium consulting work is born in rooms like this; scope properly now.",
+        tag: "monthly", tagLabel: "Month 3"
+      },
+      {
+        id: "3.4",
+        title: "Each month — Identify 1 speaking opportunity to apply for",
+        time: "30 min",
+        detail: "One sector event, panel, or association forum. Submit a proposal tied to your content pillars. One keynote = months of inbound. Three applications over the quarter, not ten.",
+        tag: "monthly", tagLabel: "Each Month"
+      }
+    ]
+  },
+  {
+    id: 4,
+    kicker: "Phase Four",
+    title: "Quarterly Review",
+    summary: "End of 90 days. Honest stocktake. Recalibrate or repeat. The discipline that turns a single quarter into a compounding system.",
+    timingLabel: "End of Week 13",
+    timingNote: "≈ 4 hrs total",
+    tasks: [
+      {
+        id: "4.1",
+        title: "Review actuals against the six 90-day KPIs",
+        time: "60 min",
+        detail: "Accounts named, posts published, intros requested, diagnostics held, proposals issued, roundtable scoped. What hit, what missed, why.",
+        tag: "quarterly", tagLabel: "Review"
+      },
+      {
+        id: "4.2",
+        title: "Content audit — which 3 posts drove inbound?",
+        time: "45 min",
+        detail: "Not vanity engagement — actual inbound conversation. Double down on those angles next quarter. Cut what didn't land. Diagnostic insights are your richest content vein.",
+        tag: "quarterly", tagLabel: "Review"
+      },
+      {
+        id: "4.3",
+        title: "Channel mix decision",
+        time: "45 min",
+        detail: "Which channel converted? Warm intros, content inbound, cold-ish email, or commenting? Reweight next quarter's hours accordingly. Most consultants over-invest in their weakest channel — don't.",
+        tag: "quarterly", tagLabel: "Review"
+      },
+      {
+        id: "4.4",
+        title: "Decide: same sector deeper, or add a second?",
+        time: "30 min",
+        detail: "(a) Repeat in same sector with sharper targeting, (b) extend to a second sector, or (c) shift channel mix only. Default to (a) unless the sector is clearly wrong.",
+        tag: "quarterly", tagLabel: "Decision"
+      },
+      {
+        id: "4.5",
+        title: "Set the next 90 days — new target list & KPIs",
+        time: "60 min",
+        detail: "Refresh the 25-account list. Re-set KPIs based on what's realistic given current delivery commitments. Reset the tracker. Begin again.",
+        tag: "quarterly", tagLabel: "Reset"
+      }
+    ]
+  }
+];
+
+// ============================================
+// STATE (localStorage-safe)
+// ============================================
+const STORAGE_KEY = "sollved_bd_plan_v2";
+let state = { tasks: {}, notes: {}, week: 1 };
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        state.tasks = parsed.tasks || {};
+        state.notes = parsed.notes || {};
+        state.week = parsed.week || 1;
+      }
+    }
+  } catch (e) {
+    console.warn("Could not load saved state:", e);
+    state = { tasks: {}, notes: {}, week: 1 };
+  }
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    console.warn("Could not save state:", e);
+  }
+}
+
+// ============================================
+// RENDER
+// ============================================
+function tagClass(tag) {
+  return {
+    setup: "tag-setup",
+    weekly: "tag-weekly",
+    monthly: "tag-monthly",
+    quarterly: "tag-quarterly"
+  }[tag] || "tag-setup";
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+function renderPlan() {
+  const container = document.getElementById("phaseContainer");
+  container.innerHTML = "";
+
+  PLAN.forEach((phase) => {
+    const section = document.createElement("section");
+    section.className = "phase";
+    section.id = `phase-${phase.id}`;
+
+    const tasksHtml = phase.tasks.map((task) => {
+      const isDone = !!state.tasks[task.id];
+      return `
+        <div class="task ${isDone ? "done" : ""}" data-task="${task.id}">
+          <div class="checkbox ${isDone ? "checked" : ""}" data-toggle="${task.id}" role="checkbox" aria-checked="${isDone}" tabindex="0"></div>
+          <div class="task-body">
+            <div class="task-head">
+              <span class="task-id">${task.id}</span>
+              <span class="task-title">${task.title}</span>
+              <span class="task-time">${task.time}</span>
+            </div>
+            <div class="task-detail">${task.detail}</div>
+          </div>
+          <span class="task-tag ${tagClass(task.tag)}">${task.tagLabel}</span>
+        </div>
+      `;
+    }).join("");
+
+    const noteValue = state.notes[`phase-${phase.id}`] || "";
+
+    section.innerHTML = `
+      <div class="phase-header">
+        <div class="phase-num">${["I","II","III","IV"][phase.id - 1]}</div>
+        <div class="phase-meta">
+          <div class="phase-kicker">${phase.kicker}</div>
+          <h2 class="phase-title">${phase.title}</h2>
+          <p class="phase-summary">${phase.summary}</p>
+        </div>
+        <div class="phase-timing">
+          <strong>${phase.timingLabel}</strong>
+          ${phase.timingNote}
+        </div>
+      </div>
+      <div class="tasks">${tasksHtml}</div>
+      <div class="notes-card">
+        <div class="label">Notes — Phase ${phase.id}</div>
+        <textarea data-note="phase-${phase.id}" placeholder="Capture decisions, named accounts, intro responses, draft post angles…">${escapeHtml(noteValue)}</textarea>
+      </div>
+    `;
+    container.appendChild(section);
+  });
+
+  bindEvents();
+  updateProgress();
+  updateWeekDisplay();
+}
+
+function bindEvents() {
+  document.querySelectorAll("[data-toggle]").forEach(el => {
+    el.addEventListener("click", () => toggleTask(el.dataset.toggle));
+    el.addEventListener("keydown", (e) => {
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        toggleTask(el.dataset.toggle);
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-note]").forEach(el => {
+    el.addEventListener("input", () => {
+      state.notes[el.dataset.note] = el.value;
+      saveState();
+    });
+  });
+}
+
+function toggleTask(id) {
+  state.tasks[id] = !state.tasks[id];
+  saveState();
+  const taskEl = document.querySelector(`[data-task="${id}"]`);
+  const checkboxEl = document.querySelector(`[data-toggle="${id}"]`);
+  if (state.tasks[id]) {
+    taskEl.classList.add("done");
+    checkboxEl.classList.add("checked");
+    checkboxEl.setAttribute("aria-checked", "true");
+  } else {
+    taskEl.classList.remove("done");
+    checkboxEl.classList.remove("checked");
+    checkboxEl.setAttribute("aria-checked", "false");
+  }
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = PLAN.reduce((sum, p) => sum + p.tasks.length, 0);
+  const done = Object.values(state.tasks).filter(Boolean).length;
+  const pct = total === 0 ? 0 : (done / total) * 100;
+  document.getElementById("progressBar").style.width = pct + "%";
+  document.getElementById("completedCount").textContent = done;
+  document.getElementById("totalCount").textContent = total;
+}
+
+function updateWeekDisplay() {
+  document.getElementById("weekNum").textContent = `Week ${state.week}`;
+}
+
+// ============================================
+// WEEK CONTROLS
+// ============================================
+document.getElementById("weekUpBtn").addEventListener("click", () => {
+  if (state.week < 13) {
+    state.week++;
+    saveState();
+    updateWeekDisplay();
+  }
+});
+
+document.getElementById("weekDownBtn").addEventListener("click", () => {
+  if (state.week > 1) {
+    state.week--;
+    saveState();
+    updateWeekDisplay();
+  }
+});
+
+// ============================================
+// NAV
+// ============================================
+function setupNavHighlight() {
+  const links = document.querySelectorAll("#phaseNav a");
+  const sections = Array.from(document.querySelectorAll("section.phase"));
+
+  function onScroll() {
+    const scrollY = window.scrollY + 120;
+    let activeIdx = 0;
+    sections.forEach((sec, idx) => {
+      if (sec.offsetTop <= scrollY) activeIdx = idx;
+    });
+    links.forEach((l, idx) => l.classList.toggle("active", idx === activeIdx));
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+}
+
+// ============================================
+// RESET
+// ============================================
+document.getElementById("resetBtn").addEventListener("click", () => {
+  if (confirm("Reset all progress, notes, and week counter? This cannot be undone.")) {
+    state = { tasks: {}, notes: {}, week: 1 };
+    saveState();
+    renderPlan();
+  }
+});
+
+// ============================================
+// INIT
+// ============================================
+loadState();
+renderPlan();
+setupNavHighlight();
+</script>
+</body>
+</html>
